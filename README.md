@@ -2,7 +2,7 @@
 
 > Restaurant Ordering System – hệ thống đặt món nhà hàng
 
-Hệ thống số hóa toàn bộ quy trình vận hành nhà hàng/quán cafe: từ khách quét QR gọi món, điều phối bếp thời gian thực, đến thanh toán và báo cáo kinh doanh.
+Hệ thống số hóa toàn bộ quy trình vận hành nhà hàng: từ khách quét QR gọi món, điều phối bếp thời gian thực, đến thanh toán và báo cáo kinh doanh.
 
 ---
 
