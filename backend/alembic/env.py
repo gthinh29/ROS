@@ -11,6 +11,14 @@ from alembic import context  # noqa: E402
 from core.config import settings  # noqa: E402
 from core.database import Base  # noqa: E402
 
+# Import all models so Alembic autogenerate can detect them
+import modules.auth.models  # noqa: E402, F401
+import modules.tables.models  # noqa: E402, F401
+import modules.menu.models  # noqa: E402, F401
+import modules.inventory.models  # noqa: E402, F401
+import modules.orders.models  # noqa: E402, F401
+import modules.billing.models  # noqa: E402, F401
+
 # Alembic Config object — gives access to values in .ini file
 config = context.config
 
