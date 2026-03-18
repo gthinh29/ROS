@@ -1,4 +1,5 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
+from fastapi.responses import JSONResponse
 
 from core.config import settings
 from modules.auth.router import router as auth_router
@@ -9,6 +10,8 @@ from modules.menu.router import router as menu_router
 from modules.orders.router import router as orders_router
 from modules.reports.router import router as reports_router
 from modules.tables.router import router as tables_router
+# Middlewares
+from middlewares.auth import JWTAuthenticationMiddleware
 
 app = FastAPI(
     title=settings.PROJECT_NAME,
@@ -27,6 +30,8 @@ app.include_router(kds_router)
 app.include_router(billing_router)
 app.include_router(reports_router)
 
+# ── Register authentication middleware ───────────────────────────────────────────
+app.add_middleware(JWTAuthenticationMiddleware)
 
 @app.get("/health", tags=["System"])
 def health_check():
