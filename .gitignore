@@ -29,3 +29,7 @@ htmlcov/
 
 # Alembic (generated migrations are committed, but not pyc)
 backend/alembic/__pycache__/
+
+# Team Docs
+ke-hoach-du-an.md
+quytrinhcommitgithub.md
