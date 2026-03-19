@@ -1,0 +1,60 @@
+services:
+  # ─── PostgreSQL ──────────────────────────────────────────────────────────────
+  postgres:
+    image: postgres:16
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: restaurant_db
+      POSTGRES_USER: dev
+      POSTGRES_PASSWORD: devpassword
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"                   # expose for local dev / Alembic migrations
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U dev -d restaurant_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  # ─── FastAPI Backend ──────────────────────────────────────────────────────────
+  api:
+    build: ./backend
+    restart: unless-stopped
+    env_file: ./backend/.env
+    expose:
+      - "8000"                        # internal only; nginx exposes port 80
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+    volumes:
+      - ./backend:/app                # hot-reload: source code mounted into /app
+      - /app/venv                     # exclude venv from host mount
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8000/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+
+  # ─── Nginx Reverse Proxy ─────────────────────────────────────────────────────
+  nginx:
+    image: nginx:1.25-alpine
+    restart: unless-stopped
+    ports:
+      - "80:80"                       # public HTTP entry-point
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      api:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost/nginx-health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+volumes:
+  postgres_data:
