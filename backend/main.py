@@ -1,5 +1,4 @@
 from fastapi import FastAPI, HTTPException
-from fastapi.responses import JSONResponse
 
 from core.config import settings
 from modules.auth.router import router as auth_router
