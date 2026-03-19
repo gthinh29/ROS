@@ -5,17 +5,46 @@ on:
     branches: [develop, main]
 
 jobs:
+  # ─── Backend: Lint ────────────────────────────────────────────────────
   backend-lint:
     runs-on: ubuntu-latest
+    # Chỉ chạy khi có file trong backend/ thay đổi
+    if: >
+      github.event_name == 'pull_request'
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with: { python-version: '3.12' }
-      - run: pip install ruff
-      - run: ruff check backend/
 
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            backend:
+              - 'backend/**'
+
+      - uses: actions/setup-python@v5
+        if: steps.filter.outputs.backend == 'true'
+        with:
+          python-version: '3.12'
+          cache: 'pip'
+          cache-dependency-path: backend/requirements.txt
+
+      - name: Install ruff
+        if: steps.filter.outputs.backend == 'true'
+        run: pip install ruff
+
+      - name: Lint backend
+        if: steps.filter.outputs.backend == 'true'
+        run: ruff check backend/
+
+      - name: Skip — no backend changes
+        if: steps.filter.outputs.backend != 'true'
+        run: echo "✅ No backend changes detected. Skipping lint."
+
+  # ─── Backend: Test ────────────────────────────────────────────────────
   backend-test:
     runs-on: ubuntu-latest
+    if: >
+      github.event_name == 'pull_request'
     services:
       postgres:
         image: postgres:16
@@ -23,24 +52,99 @@ jobs:
           POSTGRES_DB: test_db
           POSTGRES_USER: test
           POSTGRES_PASSWORD: test
+        ports:
+          - 5432:5432
         options: >-
           --health-cmd pg_isready
           --health-interval 5s
+          --health-retries 5
+          --health-timeout 5s
+
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with: { python-version: '3.12' }
-      - run: pip install -r backend/requirements.txt
-      - run: pytest backend/ -v
-        env:
-          DATABASE_URL: postgresql://test:test@localhost/test_db
 
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            backend:
+              - 'backend/**'
+
+      - uses: actions/setup-python@v5
+        if: steps.filter.outputs.backend == 'true'
+        with:
+          python-version: '3.12'
+          cache: 'pip'
+          cache-dependency-path: backend/requirements.txt
+
+      - name: Install dependencies
+        if: steps.filter.outputs.backend == 'true'
+        run: pip install -r backend/requirements.txt
+
+      - name: Run tests
+        if: steps.filter.outputs.backend == 'true'
+        working-directory: backend
+        env:
+          DATABASE_URL: postgresql://test:test@localhost:5432/test_db
+          SECRET_KEY: ci-test-secret-key
+          ALGORITHM: HS256
+          ACCESS_TOKEN_EXPIRE_MINUTES: '30'
+          REFRESH_TOKEN_EXPIRE_DAYS: '7'
+        run: pytest tests/ -v
+
+      - name: Skip — no backend changes
+        if: steps.filter.outputs.backend != 'true'
+        run: echo "✅ No backend changes detected. Skipping tests."
+
+  # ─── Frontend: Lint ───────────────────────────────────────────────────
   frontend-lint:
     runs-on: ubuntu-latest
+    if: >
+      github.event_name == 'pull_request'
     steps:
       - uses: actions/checkout@v4
+
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            frontend:
+              - 'pos-web/**'
+              - 'kds-web/**'
+              - 'admin-web/**'
+
       - uses: actions/setup-node@v4
-        with: { node-version: '20' }
-      - run: cd pos-web && npm ci && npm run lint
-      - run: cd kds-web && npm ci && npm run lint
-      - run: cd admin-web && npm ci && npm run lint
+        if: steps.filter.outputs.frontend == 'true'
+        with:
+          node-version: '20'
+
+      - name: Lint POS Web
+        if: steps.filter.outputs.frontend == 'true'
+        run: |
+          if [ -d "pos-web" ]; then
+            cd pos-web && npm ci && npm run lint
+          else
+            echo "⏭️ pos-web/ chưa tồn tại. Skip!"
+          fi
+
+      - name: Lint KDS Web
+        if: steps.filter.outputs.frontend == 'true'
+        run: |
+          if [ -d "kds-web" ]; then
+            cd kds-web && npm ci && npm run lint
+          else
+            echo "⏭️ kds-web/ chưa tồn tại. Skip!"
+          fi
+
+      - name: Lint Admin Web
+        if: steps.filter.outputs.frontend == 'true'
+        run: |
+          if [ -d "admin-web" ]; then
+            cd admin-web && npm ci && npm run lint
+          else
+            echo "⏭️ admin-web/ chưa tồn tại. Skip!"
+          fi
+
+      - name: Skip — no frontend changes
+        if: steps.filter.outputs.frontend != 'true'
+        run: echo "✅ No frontend changes detected. Skipping lint."
