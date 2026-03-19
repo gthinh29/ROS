@@ -7,7 +7,6 @@ from core.config import settings
 
 IS_PUBLIC = True # Set to False in production to enforce authentication on all routes by default
 excluded_paths = ["/auth/login", "/auth/signup", "/auth/refresh-token"]
-admin_paths = [""] # For special cases like Admin routes that require additional checks (e.g., role-based access control)
 class JWTAuthenticationMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next):
         if IS_PUBLIC:
@@ -38,12 +37,6 @@ class JWTAuthenticationMiddleware(BaseHTTPMiddleware):
             return JSONResponse(status_code=401, content={"detail": "Token has expired"})
         except jwt.PyJWTError:
             return JSONResponse(status_code=401, content={"detail": "Invalid token"})
-        
-        # Check if the request path is in the admin paths
-        if request.url.path in admin_paths:
-            user_role = request.state.user.get("role")
-            if user_role != "ADMIN":  # Example check for admin role
-                return JSONResponse(status_code=403, content={"detail": "Insufficient permissions"})
         
         response = await call_next(request)
         return response
