@@ -67,8 +67,11 @@ cd restaurant-system
 
 ```bash
 cp backend/.env.example backend/.env
-# Mở backend/.env và điền các giá trị cần thiết
 ```
+
+> **Lưu ý:** Không cần chỉnh `DATABASE_URL` khi chạy bằng Docker Compose —
+> host kết nối DB được tự động override trong `docker-compose.yml`.
+> Chỉ sửa `SECRET_KEY` nếu deploy production.
 
 ### 3. Khởi động backend + database
 
@@ -98,16 +101,22 @@ npm run dev
 ### 5. Chạy toàn bộ bằng Docker Compose
 
 ```bash
+# Lần đầu (hoặc khi có thay đổi code)
 docker-compose up --build
+
+# Những lần sau
+docker-compose up
 ```
+
+> Services khởi động theo thứ tự: **postgres** → **api** → **nginx**  
+> (healthcheck tự động, không cần chờ thủ công)
 
 | Service | URL |
 |---|---|
-| Backend API | http://localhost:8000 |
-| API Docs (Swagger) | http://localhost:8000/docs |
-| POS Web | http://localhost:3001 |
-| KDS Web | http://localhost:3002 |
-| Admin Web | http://localhost:3003 |
+| Backend API (qua Nginx) | http://localhost |
+| API Docs (Swagger) | http://localhost/docs |
+| Backend API (trực tiếp) | http://localhost:8000 |
+| PostgreSQL | localhost:5432 |
 
 ---
 
