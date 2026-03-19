@@ -10,8 +10,11 @@ from modules.menu.router import router as menu_router
 from modules.orders.router import router as orders_router
 from modules.reports.router import router as reports_router
 from modules.tables.router import router as tables_router
+
 # Middlewares
 from middlewares.auth import JWTAuthenticationMiddleware
+# Exception handlers
+from utils.exception_handler import http_exception_handler, generic_exception_handler
 
 app = FastAPI(
     title=settings.PROJECT_NAME,
@@ -30,8 +33,12 @@ app.include_router(kds_router)
 app.include_router(billing_router)
 app.include_router(reports_router)
 
-# ── Register authentication middleware ───────────────────────────────────────────
+# ── Register middlewares ───────────────────────────────────────────
 app.add_middleware(JWTAuthenticationMiddleware)
+
+# ── Register handlers ─────────────────────────────────────────────────
+app.add_exception_handler(HTTPException, http_exception_handler)
+app.add_exception_handler(Exception, generic_exception_handler)
 
 @app.get("/health", tags=["System"])
 def health_check():
