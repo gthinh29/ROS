@@ -22,7 +22,12 @@ services:
   api:
     build: ./backend
     restart: unless-stopped
-    env_file: ./backend/.env          # load SECRET_KEY, JWT config, etc. từ .env
+    env_file:
+      - path: ./backend/.env.example
+        required: true
+      - path: ./backend/.env
+        required: false
+
     environment:
       # Override DATABASE_URL để dùng hostname Docker internal ("postgres")
       # thay vì "localhost" trong .env (vốn dành cho local dev ngoài Docker)
