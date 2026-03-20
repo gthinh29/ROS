@@ -33,8 +33,7 @@ async def refresh_token(request: RefreshTokenRequest, db: Session = Depends(get_
     result = await services.refresh_access_token(db, request)
     return ResponseWrapper.success_response(result)
 
-
-@router.get("/users")
-async def get_users(user=require_role(IS_ADMIN),
+@router.get("/role")
+async def check_role(user=require_role(IS_ADMIN),
                     response_model_exclude_none=True):
     return ResponseWrapper.success_response({"message": f"Hello {user['role']}, you are allowed to see users."})

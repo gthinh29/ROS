@@ -1,6 +1,7 @@
-"""Services for user authentication and management"""
-from .schemas import UserBase, LoginRequest, LoginResponse, RefreshTokenResponse, RefreshTokenRequest
-from .models import User
+"""Services for user authentication"""
+from .schemas import LoginRequest, LoginResponse, RefreshTokenResponse, RefreshTokenRequest
+from modules.user.models import User
+from modules.auth.models import RefreshToken
 from sqlalchemy.orm import Session
 from fastapi import HTTPException, status
 from pwdlib import PasswordHash
@@ -9,10 +10,6 @@ from datetime import datetime, timedelta, timezone
 from core.config import settings
 
 pwd_context = PasswordHash.recommended()
-
-"""AUTH SERVICES"""
-async def create_user(db: Session, user: UserBase):
-    pass
 
 # Helper functions for authentication and token management
 async def create_access_token(data: dict):

@@ -12,6 +12,7 @@ from core.config import settings  # noqa: E402
 from core.database import Base  # noqa: E402
 
 # Import all models so Alembic autogenerate can detect them
+import modules.user.models  # noqa: E402, F401
 import modules.auth.models  # noqa: E402, F401
 import modules.tables.models  # noqa: E402, F401
 import modules.menu.models  # noqa: E402, F401
