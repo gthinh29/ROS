@@ -1,6 +1,7 @@
 """Services for user management"""
 from .schemas import UserCreate, UserUpdate
 from .models import User
+from .repository import UserRepository
 from sqlalchemy.orm import Session
 from fastapi import HTTPException, status
 from fastapi.responses import JSONResponse
@@ -10,28 +11,26 @@ pwd_context = PasswordHash.recommended()
 
 # Create a new user
 async def create_user(db: Session, user: UserCreate):
-    db_user = db.query(User).filter(User.email == user.email).first()
+    db_user = UserRepository.get_user_by_email(db, user.email)
     if db_user:
         raise HTTPException(status_code=400, detail="Email already registered")
     
     if user.phone:
-        db_phone = db.query(User).filter(User.phone == user.phone).first()
+        db_phone = UserRepository.get_user_by_phone(db, user.phone)
         if db_phone:
             raise HTTPException(status_code=400, detail="Phone already registered")
             
     hashed_password = pwd_context.hash(user.password)
     
-    db_user = User(
-        name=user.name,
-        email=user.email,
-        phone=user.phone,
-        role=user.role,
-        is_active=user.is_active,
-        password_hash=hashed_password
-    )
-    db.add(db_user)
-    db.commit()
-    db.refresh(db_user)
+    user_data = {
+        "name": user.name,
+        "email": user.email,
+        "phone": user.phone,
+        "role": user.role,
+        "is_active": user.is_active,
+        "password_hash": hashed_password
+    }
+    UserRepository.create_user(db, user_data)
     
     return {
         "message": "User created successfully"
@@ -39,11 +38,11 @@ async def create_user(db: Session, user: UserCreate):
 
 # Get all users with pagination
 async def get_users(db: Session, skip: int = 0, limit: int = 50):
-    return db.query(User).offset(skip).limit(limit).all()
+    return UserRepository.get_users(db, skip, limit)
 
 # Get user by ID
 async def get_user_by_id(db: Session, user_id: str):
-    user = db.query(User).filter(User.id == user_id).first()
+    user = UserRepository.get_user_by_id(db, user_id)
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
     
@@ -51,19 +50,19 @@ async def get_user_by_id(db: Session, user_id: str):
 
 # Update user by ID
 async def update_user(db: Session, user_id: str, user_update: UserUpdate):
-    db_user = db.query(User).filter(User.id == user_id).first()
+    db_user = UserRepository.get_user_by_id(db, user_id)
     if not db_user:
         raise HTTPException(status_code=404, detail="User not found")
         
     update_data = user_update.model_dump(exclude_unset=True)
     
     if "email" in update_data and update_data["email"] != db_user.email:
-        existing_email = db.query(User).filter(User.email == update_data["email"]).first()
+        existing_email = UserRepository.get_user_by_email(db, update_data["email"])
         if existing_email:
             raise HTTPException(status_code=400, detail="Email already registered")
             
     if "phone" in update_data and update_data["phone"] and update_data["phone"] != db_user.phone:
-        existing_phone = db.query(User).filter(User.phone == update_data["phone"]).first()
+        existing_phone = UserRepository.get_user_by_phone(db, update_data["phone"])
         if existing_phone:
             raise HTTPException(status_code=400, detail="Phone already registered")
             
@@ -72,11 +71,7 @@ async def update_user(db: Session, user_id: str, user_update: UserUpdate):
         update_data["password_hash"] = hashed_password
         del update_data["password"]
 
-    for key, value in update_data.items():
-        setattr(db_user, key, value)
-        
-    db.commit()
-    db.refresh(db_user)
+    UserRepository.update_user(db, db_user, update_data)
     
     return {
         "message": "User updated successfully"
@@ -84,12 +79,11 @@ async def update_user(db: Session, user_id: str, user_update: UserUpdate):
 
 # Delete user by ID
 async def delete_user(db: Session, user_id: str):
-    db_user = db.query(User).filter(User.id == user_id).first()
+    db_user = UserRepository.get_user_by_id(db, user_id)
     if not db_user:
         raise HTTPException(status_code=404, detail="User not found")
     
-    db.delete(db_user)
-    db.commit()
+    UserRepository.delete_user(db, db_user)
     
     return {
         "message": "User deleted successfully"
