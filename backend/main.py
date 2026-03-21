@@ -2,6 +2,7 @@ from fastapi import FastAPI, HTTPException
 
 from core.config import settings
 from modules.auth.router import router as auth_router
+from modules.user.router import router as user_router
 from modules.billing.router import router as billing_router
 from modules.inventory.router import router as inventory_router
 from modules.kds.router import router as kds_router
@@ -24,6 +25,7 @@ app = FastAPI(
 
 # ── Register module routers ───────────────────────────────────────────
 app.include_router(auth_router)
+app.include_router(user_router)
 app.include_router(menu_router)
 app.include_router(inventory_router)
 app.include_router(tables_router)

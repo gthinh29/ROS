@@ -5,8 +5,8 @@ from jose import jwt
 from datetime import datetime, timezone
 from core.config import settings
 
-IS_PUBLIC = True # Set to False in production to enforce authentication on all routes by default
-excluded_paths = ["/auth/login", "/auth/signup", "/auth/refresh-token"]
+IS_PUBLIC = False # Set to False in production to enforce authentication on all routes by default
+excluded_paths = ["/auth/login", "/auth/signup", "/health"]
 class JWTAuthenticationMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next):
         if IS_PUBLIC:
