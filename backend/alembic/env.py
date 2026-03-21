@@ -19,6 +19,7 @@ import modules.menu.models  # noqa: E402, F401
 import modules.inventory.models  # noqa: E402, F401
 import modules.orders.models  # noqa: E402, F401
 import modules.billing.models  # noqa: E402, F401
+import modules.reservations.models  # noqa: E402, F401
 
 # Alembic Config object — gives access to values in .ini file
 config = context.config

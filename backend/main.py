@@ -8,7 +8,7 @@ from modules.inventory.router import router as inventory_router
 from modules.kds.router import router as kds_router
 from modules.menu.router import router as menu_router
 from modules.orders.router import router as orders_router
-from modules.reports.router import router as reports_router
+from modules.reservations.router import router as reservations_router
 from modules.tables.router import router as tables_router
 
 # Middlewares
@@ -32,7 +32,7 @@ app.include_router(tables_router)
 app.include_router(orders_router)
 app.include_router(kds_router)
 app.include_router(billing_router)
-app.include_router(reports_router)
+app.include_router(reservations_router)
 
 # ── Register middlewares ───────────────────────────────────────────
 app.add_middleware(JWTAuthenticationMiddleware)
