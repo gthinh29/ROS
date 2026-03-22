@@ -8,9 +8,9 @@ from core.config import settings
 IS_PUBLIC = False # Set to False in production to enforce authentication on all routes by default
 
 # Exact path matches that skip JWT validation
-_EXCLUDED_EXACT = {"/auth/login", "/auth/signup", "/health"}
+_EXCLUDED_EXACT = {"/auth/login", "/auth/signup", "/health", "/favicon.ico"}
 # Prefix matches — any URL starting with these is public
-_EXCLUDED_PREFIXES = ("/menu", "/tables", "/ws/kds", "/reservations", "/orders")
+_EXCLUDED_PREFIXES = ("/menu", "/tables", "/ws/kds", "/reservations", "/orders", "/docs", "/openapi.json", "/redoc")
 
 class JWTAuthenticationMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next):
