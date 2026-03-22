@@ -18,6 +18,10 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from core.database import Base
 from core.enums import OrderItemStatus, OrderStatus, OrderType
 
+# Đảm bảo các bảng liên quan đã được nạp vào MetaData trước khi SQLAlchemy ánh xạ bảng Orders
+import modules.tables.models  # noqa: F401
+import modules.reservations.models  # noqa: F401
+
 
 class Order(Base):
     __tablename__ = "orders"
