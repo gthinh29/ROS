@@ -30,8 +30,9 @@ htmlcov/
 # Alembic (generated migrations are committed, but not pyc)
 backend/alembic/__pycache__/
 
-# Team Docs
+# Team Docs – ignore Word docs, keep JSON artifacts like Postman collection
+Tailieu/*.docx
+Tailieu/*.doc
 ke-hoach-du-an.md
 ke-hoach-du-an.docx
 quytrinhcommitgithub.md
-Tailieu/
