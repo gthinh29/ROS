@@ -292,7 +292,7 @@ Hệ thống sử dụng PostgreSQL với các bảng chính được tổ chứ
 
 -   Domain Người dùng & Xác thực: users, restaurants
 
--   Domain Menu & Nguyên liệu: menu_items, variants, modifiers, ingredients, bom_items
+-   Domain Menu & Nguyên liệu: categories, menu_items, variants, modifiers, ingredients, bom_items
 
 -   Domain Bàn & Đặt chỗ: tables, reservations
 
@@ -308,6 +308,8 @@ Hệ thống sử dụng PostgreSQL với các bảng chính được tổ chứ
   restaurants       id, name, settings (JSONB)                                                                                      Cấu hình VAT, phí dịch vụ, tên nhà hàng, logo URL
 
   tables            id, zone, number, qr_token, status, restaurant_id                                                               Status: EMPTY / OCCUPIED / RESERVED / CLEANING
+
+  categories        id, restaurant_id, name, sort_order                                                             Phân loại món: Khai vị, Món chính, Đồ uống
 
   menu_items        id, name, category_id, base_price, image_url, is_available                                                      Toggle is_available ảnh hưởng ngay Customer Web
 
@@ -514,6 +516,8 @@ Dành cho khách không dùng điện thoại hoặc không muốn tự thao tá
   /auth/refresh                     POST             Public          Cấp access_token mới từ refresh_token
 
   **MENU**                                                           
+
+  /menu/categories                  GET              Public          Danh sách phân loại món (Category)
 
   /menu/items                       GET              Public          Danh sách món theo nhà hàng, filter category/available
 
