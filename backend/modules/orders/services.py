@@ -224,6 +224,14 @@ async def create_order(db: Session, request: OrderCreate) -> Order:
         from core.ws_manager import kds_manager
         import asyncio
         asyncio.create_task(kds_manager.broadcast_new_order_items(kds_events))
+        
+        # Broadcast table status to POS
+        if table:
+            asyncio.create_task(kds_manager.broadcast_pos_event({
+                "type": "TABLE_STATUS", 
+                "table_id": str(table.id), 
+                "status": TableStatus.OCCUPIED.value
+            }))
     except Exception:
         pass  # WS broadcast failure must never break the order response
 
@@ -266,4 +274,20 @@ async def update_item_status(
     item.status = payload.status
     db.commit()
     db.refresh(item)
+    
+    # ── Phase 2: broadcast to Staff (fire-and-forget) ────────────
+    if payload.status == OrderItemStatus.READY:
+        try:
+            from core.ws_manager import kds_manager
+            import asyncio
+            menu_item = db.get(MenuItem, item.menu_item_id)
+            asyncio.create_task(kds_manager.broadcast_staff_event({
+                "type": "ITEM_READY",
+                "table_id": str(order.table_id) if order.table_id else None,
+                "menu_item_name": menu_item.name if menu_item else "Unknown",
+                "order_item_id": str(item.id)
+            }))
+        except Exception:
+            pass
+            
     return item

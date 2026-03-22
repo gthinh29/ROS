@@ -7,7 +7,6 @@ Responsibilities:
 """
 from __future__ import annotations
 
-import math
 import uuid
 from datetime import datetime, timezone
 from decimal import ROUND_HALF_UP, Decimal
@@ -164,6 +163,19 @@ async def checkout(db: Session, payload: CheckoutRequest) -> CheckoutResponse:
                 table.status = TableStatus.EMPTY
 
     db.commit()
+
+    # ── Broadcast POS event ────────────────────────────
+    try:
+        from core.ws_manager import kds_manager
+        import asyncio
+        if payload.payment_method.value in ["CASH", "VIETQR", "CARD"] and order and order.table_id:
+            asyncio.create_task(kds_manager.broadcast_pos_event({
+                "type": "TABLE_STATUS",
+                "table_id": str(order.table_id),
+                "status": TableStatus.EMPTY.value
+            }))
+    except Exception:
+        pass
 
     return CheckoutResponse(
         bill_id=bill.id,

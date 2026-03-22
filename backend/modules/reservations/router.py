@@ -1,5 +1,4 @@
 from fastapi import APIRouter
-from . import models  # Import to register tables with SQLAlchemy Base
 
 
 router = APIRouter(prefix="/reservations", tags=["Reservations"])
