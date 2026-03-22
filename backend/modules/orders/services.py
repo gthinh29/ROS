@@ -23,8 +23,8 @@ from modules.tables.models import Table
 
 # Valid state transitions for each order-item status
 _ALLOWED_TRANSITIONS: dict[OrderItemStatus, list[OrderItemStatus]] = {
-    OrderItemStatus.PENDING: [OrderItemStatus.PREPARING],
-    OrderItemStatus.PREPARING: [OrderItemStatus.READY],
+    OrderItemStatus.PENDING: [OrderItemStatus.PREPARING, OrderItemStatus.READY, OrderItemStatus.SERVED],
+    OrderItemStatus.PREPARING: [OrderItemStatus.READY, OrderItemStatus.SERVED],
     OrderItemStatus.READY: [OrderItemStatus.SERVED],
     OrderItemStatus.SERVED: [],
 }
