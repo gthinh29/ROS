@@ -11,7 +11,7 @@ from pwdlib import PasswordHash
 from core.config import settings  # noqa: F401 — ensures .env is loaded
 from core.database import SessionLocal
 from core.enums import TableStatus, UserRole
-from modules.user.models import User
+from modules.auth.models import User
 from modules.inventory.models import BOMItem, Ingredient
 from modules.menu.models import Category, MenuItem, Modifier, Variant
 from modules.tables.models import Restaurant, Table

@@ -14,7 +14,7 @@ echo "✅ Migrations complete"
 echo "⏳ Checking if seed is needed..."
 SEED_CHECK=$(python - <<'EOF'
 from core.database import SessionLocal
-from modules.user.models import User
+from modules.auth.models import User
 db = SessionLocal()
 count = db.query(User).count()
 db.close()
