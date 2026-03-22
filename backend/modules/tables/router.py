@@ -1,13 +1,12 @@
 import uuid
 from typing import List
-from fastapi import APIRouter, Depends, HTTPException, status, WebSocket, WebSocketDisconnect
+from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.responses import Response
 from sqlalchemy.orm import Session
 
 from core.database import get_db
 from core.denpendencies.role_access import require_role
 from core.enums import UserRole
-from core.ws_manager import kds_manager
 from modules.tables import schemas, services
 
 router = APIRouter(prefix="/tables", tags=["Tables"])
@@ -46,27 +45,4 @@ async def get_table_qr_code(
     img_bytes = services.generate_qr_code_png(table.qr_token)
     return Response(content=img_bytes, media_type="image/png")
 
-
-
-
-@router.websocket("/ws/pos")
-async def pos_websocket(websocket: WebSocket):
-    """WebSocket endpoint for POS devices (Cashier) to track table statuses in real-time."""
-    await kds_manager.connect_pos(websocket)
-    try:
-        while True:
-            # POS clients don't send active messages to server for now, just keep-alive ping/pong
-            await websocket.receive_text()
-    except WebSocketDisconnect:
-        await kds_manager.disconnect_pos(websocket)
-
-@router.websocket("/ws/staff/{user_id}")
-async def staff_websocket(websocket: WebSocket, user_id: str):
-    """WebSocket endpoint for Staff (Waiters) to receive push notifications."""
-    await kds_manager.connect_staff(websocket, user_id)
-    try:
-        while True:
-            await websocket.receive_text()
-    except WebSocketDisconnect:
-        await kds_manager.disconnect_staff(websocket, user_id)
 

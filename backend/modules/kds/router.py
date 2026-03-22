@@ -5,10 +5,10 @@ from fastapi import APIRouter, WebSocket, WebSocketDisconnect
 
 from core.ws_manager import kds_manager
 
-router = APIRouter(prefix="/ws/kds", tags=["KDS"])
+router = APIRouter(prefix="/ws", tags=["WebSockets"])
 
 
-@router.websocket("/{zone}")
+@router.websocket("/kds/{zone}")
 async def kds_ws_endpoint(websocket: WebSocket, zone: str):
     """
     Connect to the KDS WebSocket for a specific zone.
@@ -43,3 +43,24 @@ async def kds_ws_endpoint(websocket: WebSocket, zone: str):
                 await websocket.send_text('{"type":"pong"}')
     except WebSocketDisconnect:
         await kds_manager.disconnect(websocket, zone)
+
+@router.websocket("/pos")
+async def pos_websocket(websocket: WebSocket):
+    """WebSocket endpoint for POS devices (Cashier) to track table statuses in real-time."""
+    await kds_manager.connect_pos(websocket)
+    try:
+        while True:
+            # POS clients don't send active messages to server for now, just keep-alive ping/pong
+            await websocket.receive_text()
+    except WebSocketDisconnect:
+        await kds_manager.disconnect_pos(websocket)
+
+@router.websocket("/staff/{user_id}")
+async def staff_websocket(websocket: WebSocket, user_id: str):
+    """WebSocket endpoint for Staff (Waiters) to receive push notifications."""
+    await kds_manager.connect_staff(websocket, user_id)
+    try:
+        while True:
+            await websocket.receive_text()
+    except WebSocketDisconnect:
+        await kds_manager.disconnect_staff(websocket, user_id)
