@@ -135,13 +135,7 @@ class KDSManager:
                 for uid, ws in dead:
                     self._staff_connections[uid].discard(ws)
 
-        await websocket.accept()
-        async with self._lock:
-            self._staff_connections[user_id].add(websocket)
 
-    async def disconnect_staff(self, websocket: WebSocket, user_id: str) -> None:
-        async with self._lock:
-            self._staff_connections[user_id].discard(websocket)
 
     async def send_to_staff(self, user_id: str, event: dict) -> None:
         """Push a direct notification to a specific staff member (e.g. food is ready)."""

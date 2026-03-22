@@ -1,12 +1,13 @@
 import uuid
 from typing import List
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, WebSocket, WebSocketDisconnect
 from fastapi.responses import Response
 from sqlalchemy.orm import Session
 
 from core.database import get_db
 from core.denpendencies.role_access import require_role
 from core.enums import UserRole
+from core.ws_manager import kds_manager
 from modules.tables import schemas, services
 
 router = APIRouter(prefix="/tables", tags=["Tables"])
@@ -45,8 +46,8 @@ async def get_table_qr_code(
     img_bytes = services.generate_qr_code_png(table.qr_token)
     return Response(content=img_bytes, media_type="image/png")
 
-from fastapi import WebSocket, WebSocketDisconnect
-from core.ws_manager import kds_manager
+
+
 
 @router.websocket("/ws/pos")
 async def pos_websocket(websocket: WebSocket):
