@@ -6,13 +6,19 @@ from datetime import datetime, timezone
 from core.config import settings
 
 IS_PUBLIC = False # Set to False in production to enforce authentication on all routes by default
-excluded_paths = ["/auth/login", "/auth/signup", "/health"]
+
+# Exact path matches that skip JWT validation
+_EXCLUDED_EXACT = {"/auth/login", "/auth/signup", "/health"}
+# Prefix matches — any URL starting with these is public
+_EXCLUDED_PREFIXES = ("/menu", "/tables", "/ws/kds", "/reservations", "/orders")
+
 class JWTAuthenticationMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next):
         if IS_PUBLIC:
             return await call_next(request)
-        # Check if the request path is in the excluded paths
-        if request.url.path in excluded_paths:
+        # Skip JWT for public routes (exact match or prefix match)
+        path = request.url.path
+        if path in _EXCLUDED_EXACT or path.startswith(_EXCLUDED_PREFIXES):
             return await call_next(request)
 
         # Get the token from the Authorization header
@@ -35,7 +41,7 @@ class JWTAuthenticationMiddleware(BaseHTTPMiddleware):
 
         except jwt.ExpiredSignatureError:
             return JSONResponse(status_code=401, content={"detail": "Token has expired"})
-        except jwt.PyJWTError:
+        except jwt.JWTError:
             return JSONResponse(status_code=401, content={"detail": "Invalid token"})
         
         response = await call_next(request)
