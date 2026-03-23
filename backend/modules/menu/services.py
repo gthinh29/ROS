@@ -3,12 +3,21 @@ from fastapi import HTTPException, status
 from uuid import UUID
 from typing import List
 
-from .repository import CategoryRepository, MenuItemRepository
+from .repository import (
+    CategoryRepository,
+    MenuItemRepository,
+    VariantRepository,
+    ModifierRepository,
+)
 from .models import Category, MenuItem, Variant, Modifier
 from .schemas import (
-    CategoryCreate, CategoryUpdate, 
+    CategoryCreate,
+    CategoryUpdate,
     MenuItemCreate, MenuItemUpdate,
-    VariantUpdate, ModifierUpdate
+    VariantCreate,
+    VariantUpdate,
+    ModifierCreate,
+    ModifierUpdate,
 )
 # We will need OrderItem from orders to check dependencies
 # Since we didn't do orders fully, we can import the model directly if possible.
@@ -18,6 +27,7 @@ from modules.inventory.models import BOMItem
 
 # ── Category Services ─────────────────────────────────────────────────────────
 
+# Create category
 def create_category(db: Session, data: CategoryCreate) -> Category:
     existing_cat = CategoryRepository.get_category_by_name(db, data.restaurant_id, data.name)
     if existing_cat:
@@ -25,12 +35,21 @@ def create_category(db: Session, data: CategoryCreate) -> Category:
                             detail="Category name already exists for this restaurant.")
     return CategoryRepository.create_category(db, data.model_dump())
 
+# Get categories with optional restaurant filter and pagination
 def get_categories(db: Session, restaurant_id: UUID = None, skip: int = 0, limit: int = 50) -> List[Category]:
-    return CategoryRepository.get_categories(db, restaurant_id, skip, limit)
+    list_categories = CategoryRepository.get_categories(db, restaurant_id, skip, limit)
+    if not list_categories:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No categories found.")
+    return list_categories
 
+# Get category by ID
 def get_category_by_id(db: Session, category_id: UUID) -> Category:
-     return CategoryRepository.get_category_by_id(db, category_id)
+    existing_cat = CategoryRepository.get_category_by_id(db, category_id)
+    if not existing_cat:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Category not found.")
+    return existing_cat
 
+# Update category
 def update_category(db: Session, category_id: UUID, data: CategoryUpdate) -> Category:
     db_obj = CategoryRepository.get_category_by_id(db, category_id)
     if not db_obj:
@@ -44,6 +63,7 @@ def update_category(db: Session, category_id: UUID, data: CategoryUpdate) -> Cat
     update_data = data.model_dump(exclude_unset=True)
     return CategoryRepository.update_category(db, db_obj, update_data)
 
+# Delete category only if it has no menu items. Otherwise, return an error message.
 def delete_category(db: Session, category_id: UUID) -> None:
     db_obj = CategoryRepository.get_category_by_id(db, category_id)
     if not db_obj:
@@ -58,6 +78,7 @@ def delete_category(db: Session, category_id: UUID) -> None:
         )
         
     CategoryRepository.delete_category(db, db_obj)
+    return {"message": "Category deleted successfully."}
 
 
 # ── MenuItem Services ─────────────────────────────────────────────────────────
@@ -80,8 +101,17 @@ def create_menu_item(db: Session, data: MenuItemCreate) -> MenuItem:
     return MenuItemRepository.create_menu_item(db, item_data, variants_data, modifiers_data)
 
 
-def get_menu_items(db: Session, category_id: UUID = None, skip: int = 0, limit: int = 50) -> List[MenuItem]:
-    return MenuItemRepository.get_menu_items(db, category_id, skip, limit)
+def get_menu_items(
+    db: Session,
+    category_id: UUID = None,
+    is_available: bool = None,
+    skip: int = 0,
+    limit: int = 50,
+) -> List[MenuItem]:
+    list_menu_items = MenuItemRepository.get_menu_items(db, category_id, is_available, skip, limit)
+    if not list_menu_items:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No menu items found.")
+    return list_menu_items
 
 
 def get_menu_item_by_id(db: Session, menu_item_id: UUID) -> MenuItem:
@@ -94,14 +124,14 @@ def get_menu_item_by_id(db: Session, menu_item_id: UUID) -> MenuItem:
 def update_menu_item(db: Session, menu_item_id: UUID, data: MenuItemUpdate) -> MenuItem:
     db_obj = MenuItemRepository.get_menu_item_by_id(db, menu_item_id)
     if not db_obj:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="MenuItem not found.")
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Menu Item not found.")
         
     target_category_id = data.category_id if data.category_id else db_obj.category_id
         
     if data.category_id:
         cat = CategoryRepository.get_category_by_id(db, data.category_id)
         if not cat:
-            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Provided category_id does not exist.")
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Provided category does not exist.")
 
     # Check for name uniqueness if name or category is being updated
     if data.name and (data.name != db_obj.name or data.category_id):
@@ -122,8 +152,6 @@ def update_menu_item(db: Session, menu_item_id: UUID, data: MenuItemUpdate) -> M
         # 1. Delete removed variants
         for existing_id, existing_v in list(existing_variants.items()):
             if existing_id not in incoming_variants:
-                # Note: SQLAlchemy cascade should handle orphan removal, 
-                # but we must explicitly remove them from the collection
                 db_obj.variants.remove(existing_v)
                 
         # 2. Update existing and Insert new
@@ -188,3 +216,103 @@ def delete_menu_item(db: Session, menu_item_id: UUID) -> dict:
     # 2. Hard delete MenuItem (Variants and Modifiers will drop due to cascade)
     MenuItemRepository.delete_menu_item(db, db_obj)
     return {"message": "Menu Item and related items successfully hard-deleted.", "soft_deleted": False}
+
+
+# ── Variant Services ─────────────────────────────────────────────────────────
+def get_variants_by_menu_item(db: Session, menu_item_id: UUID) -> List[Variant]:
+    menu_item = MenuItemRepository.get_menu_item_by_id(db, menu_item_id)
+    if not menu_item:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Menu Item not found.")
+    return VariantRepository.get_variants_by_menu_item(db, menu_item_id)
+
+
+def get_variant_by_id(db: Session, variant_id: UUID) -> Variant:
+    variant = VariantRepository.get_variant_by_id(db, variant_id)
+    if not variant:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Variant not found.")
+    return variant
+
+
+# Create variant for a menu item
+def create_variant(db: Session, menu_item_id: UUID, data: VariantCreate) -> Variant:
+    menu_item = MenuItemRepository.get_menu_item_by_id(db, menu_item_id)
+    if not menu_item:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Menu Item not found.")
+
+    return VariantRepository.create_variant(
+        db,
+        {
+            "menu_item_id": menu_item_id,
+            "name": data.name,
+            "extra_price": data.extra_price,
+        },
+    )
+
+# Update variant
+def update_variant(db: Session, variant_id: UUID, data: VariantUpdate) -> Variant:
+    variant = VariantRepository.get_variant_by_id(db, variant_id)
+    if not variant:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Variant not found.")
+
+    update_data = data.model_dump(exclude_unset=True, exclude={"id"})
+    if not update_data:
+        return variant
+    return VariantRepository.update_variant(db, variant, update_data)
+
+# Delete variant
+def delete_variant(db: Session, variant_id: UUID) -> None:
+    variant = VariantRepository.get_variant_by_id(db, variant_id)
+    if not variant:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Variant not found.")
+    VariantRepository.delete_variant(db, variant)
+    return {"message": "Variant deleted successfully."}
+
+# ── Modifier Services ─────────────────────────────────────────────────────────
+def get_modifiers_by_menu_item(db: Session, menu_item_id: UUID) -> List[Modifier]:
+    menu_item = MenuItemRepository.get_menu_item_by_id(db, menu_item_id)
+    if not menu_item:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Menu Item not found.")
+    return ModifierRepository.get_modifiers_by_menu_item(db, menu_item_id)
+
+
+def get_modifier_by_id(db: Session, modifier_id: UUID) -> Modifier:
+    modifier = ModifierRepository.get_modifier_by_id(db, modifier_id)
+    if not modifier:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Modifier not found.")
+    return modifier
+
+
+# Create modifier for a menu item
+def create_modifier(db: Session, menu_item_id: UUID, data: ModifierCreate) -> Modifier:
+    menu_item = MenuItemRepository.get_menu_item_by_id(db, menu_item_id)
+    if not menu_item:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Menu Item not found.")
+
+    return ModifierRepository.create_modifier(
+        db,
+        {
+            "menu_item_id": menu_item_id,
+            "name": data.name,
+            "extra_price": data.extra_price,
+            "is_required": data.is_required,
+        },
+    )
+
+# Update modifier
+def update_modifier(db: Session, modifier_id: UUID, data: ModifierUpdate) -> Modifier:
+    modifier = ModifierRepository.get_modifier_by_id(db, modifier_id)
+    if not modifier:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Modifier not found.")
+
+    update_data = data.model_dump(exclude_unset=True, exclude={"id"})
+    if not update_data:
+        return modifier
+    return ModifierRepository.update_modifier(db, modifier, update_data)
+
+# Delete modifier
+def delete_modifier(db: Session, modifier_id: UUID) -> None:
+    modifier = ModifierRepository.get_modifier_by_id(db, modifier_id)
+    if not modifier:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Modifier not found.")
+    ModifierRepository.delete_modifier(db, modifier)
+    return {"message": "Modifier deleted successfully."}

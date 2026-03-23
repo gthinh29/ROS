@@ -32,8 +32,8 @@ class VariantBase(BaseModel):
 class VariantCreate(VariantBase):
     pass
 
-class VariantUpdate(VariantBase):
-    id: Optional[UUID] = None  # Cung cấp id nếu muốn update, bỏ trống nếu muốn tạo mới
+class VariantUpdate(BaseModel):
+    id: Optional[UUID] = None
     name: Optional[str] = Field(None, max_length=100)
     extra_price: Optional[float] = None
 
@@ -54,8 +54,8 @@ class ModifierBase(BaseModel):
 class ModifierCreate(ModifierBase):
     pass
 
-class ModifierUpdate(ModifierBase):
-    id: Optional[UUID] = None  # Cung cấp id nếu muốn update, bỏ trống nếu tạo mới
+class ModifierUpdate(BaseModel):
+    id: Optional[UUID] = None
     name: Optional[str] = Field(None, max_length=100)
     extra_price: Optional[float] = None
     is_required: Optional[bool] = None
