@@ -265,209 +265,214 @@
             "name": "MENU",
             "item": [
                 {
-                    "name": "[Admin] Create Category",
-                    "event": [
+                    "name": "CATEGORIES",
+                    "item": [
                         {
-                            "listen": "test",
-                            "script": {
-                                "exec": [
-                                    "const res = pm.response.json();",
-                                    "if (res.data && res.data.id) {",
-                                    "  pm.collectionVariables.set('category_id', res.data.id);",
-                                    "}"
+                            "name": "[Admin] Create Category",
+                            "event": [
+                                {
+                                    "listen": "test",
+                                    "script": {
+                                        "exec": [
+                                            "const res = pm.response.json();",
+                                            "if (res.data && res.data.id) {",
+                                            "  pm.collectionVariables.set('category_id', res.data.id);",
+                                            "}"
+                                        ],
+                                        "type": "text/javascript"
+                                    }
+                                }
+                            ],
+                            "request": {
+                                "method": "POST",
+                                "header": [
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    }
                                 ],
-                                "type": "text/javascript"
-                            }
-                        }
-                    ],
-                    "request": {
-                        "method": "POST",
-                        "header": [
-                            {
-                                "key": "Content-Type",
-                                "value": "application/json"
-                            }
-                        ],
-                        "url": {
-                            "raw": "{{base_url}}/menu/categories",
-                            "host": [
-                                "{{base_url}}"
-                            ],
-                            "path": [
-                                "menu",
-                                "categories"
-                            ]
-                        },
-                        "auth": {
-                            "type": "bearer",
-                            "bearer": [
-                                {
-                                    "key": "token",
-                                    "value": "{{token}}",
-                                    "type": "string"
+                                "url": {
+                                    "raw": "{{base_url}}/menu/categories",
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "menu",
+                                        "categories"
+                                    ]
+                                },
+                                "auth": {
+                                    "type": "bearer",
+                                    "bearer": [
+                                        {
+                                            "key": "token",
+                                            "value": "{{token}}",
+                                            "type": "string"
+                                        }
+                                    ]
+                                },
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n    \"restaurant_id\": \"00000000-0000-0000-0000-000000000000\",\n    \"name\": \"\\u0110\\u1ed3 U\\u1ed1ng\"\n}",
+                                    "options": {
+                                        "raw": {
+                                            "language": "json"
+                                        }
+                                    }
                                 }
-                            ]
+                            },
+                            "response": []
                         },
-                        "body": {
-                            "mode": "raw",
-                            "raw": "{\n    \"restaurant_id\": \"00000000-0000-0000-0000-000000000000\",\n    \"name\": \"\\u0110\\u1ed3 U\\u1ed1ng\"\n}",
-                            "options": {
-                                "raw": {
-                                    "language": "json"
+                        {
+                            "name": "Get Categories",
+                            "request": {
+                                "method": "GET",
+                                "header": [
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "url": {
+                                    "raw": "{{base_url}}/menu/categories",
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "menu",
+                                        "categories"
+                                    ]
                                 }
-                            }
-                        }
-                    },
-                    "response": []
-                },
-                {
-                    "name": "Get Categories",
-                    "request": {
-                        "method": "GET",
-                        "header": [
-                            {
-                                "key": "Content-Type",
-                                "value": "application/json"
-                            }
-                        ],
-                        "url": {
-                            "raw": "{{base_url}}/menu/categories",
-                            "host": [
-                                "{{base_url}}"
-                            ],
-                            "path": [
-                                "menu",
-                                "categories"
-                            ]
-                        }
-                    },
-                    "response": []
-                },
-                {
-                    "name": "Get Category by ID",
-                    "request": {
-                        "method": "GET",
-                        "header": [
-                            {
-                                "key": "Content-Type",
-                                "value": "application/json"
-                            }
-                        ],
-                        "url": {
-                            "raw": "{{base_url}}/menu/categories/{{category_id}}",
-                            "host": [
-                                "{{base_url}}"
-                            ],
-                            "path": [
-                                "menu",
-                                "categories",
-                                "{{category_id}}"
-                            ]
-                        }
-                    },
-                    "response": []
-                },
-                {
-                    "name": "[Admin] Update Category",
-                    "request": {
-                        "method": "PATCH",
-                        "header": [
-                            {
-                                "key": "Content-Type",
-                                "value": "application/json"
-                            }
-                        ],
-                        "url": {
-                            "raw": "{{base_url}}/menu/categories/{{category_id}}",
-                            "host": [
-                                "{{base_url}}"
-                            ],
-                            "path": [
-                                "menu",
-                                "categories",
-                                "{{category_id}}"
-                            ]
+                            },
+                            "response": []
                         },
-                        "auth": {
-                            "type": "bearer",
-                            "bearer": [
-                                {
-                                    "key": "token",
-                                    "value": "{{token}}",
-                                    "type": "string"
+                        {
+                            "name": "Get Category by ID",
+                            "request": {
+                                "method": "GET",
+                                "header": [
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "url": {
+                                    "raw": "{{base_url}}/menu/categories/{{category_id}}",
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "menu",
+                                        "categories",
+                                        "{{category_id}}"
+                                    ]
                                 }
-                            ]
+                            },
+                            "response": []
                         },
-                        "body": {
-                            "mode": "raw",
-                            "raw": "{\n    \"name\": \"\\u0110\\u1ed3 U\\u1ed1ng L\\u1ea1nh\"\n}",
-                            "options": {
-                                "raw": {
-                                    "language": "json"
+                        {
+                            "name": "[Admin] Update Category",
+                            "request": {
+                                "method": "PATCH",
+                                "header": [
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "url": {
+                                    "raw": "{{base_url}}/menu/categories/{{category_id}}",
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "menu",
+                                        "categories",
+                                        "{{category_id}}"
+                                    ]
+                                },
+                                "auth": {
+                                    "type": "bearer",
+                                    "bearer": [
+                                        {
+                                            "key": "token",
+                                            "value": "{{token}}",
+                                            "type": "string"
+                                        }
+                                    ]
+                                },
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n    \"name\": \"\\u0110\\u1ed3 U\\u1ed1ng L\\u1ea1nh\"\n}",
+                                    "options": {
+                                        "raw": {
+                                            "language": "json"
+                                        }
+                                    }
                                 }
-                            }
-                        }
-                    },
-                    "response": []
-                },
-                {
-                    "name": "[Admin] Delete Category",
-                    "request": {
-                        "method": "DELETE",
-                        "header": [
-                            {
-                                "key": "Content-Type",
-                                "value": "application/json"
-                            }
-                        ],
-                        "url": {
-                            "raw": "{{base_url}}/menu/categories/{{category_id}}",
-                            "host": [
-                                "{{base_url}}"
-                            ],
-                            "path": [
-                                "menu",
-                                "categories",
-                                "{{category_id}}"
-                            ]
+                            },
+                            "response": []
                         },
-                        "auth": {
-                            "type": "bearer",
-                            "bearer": [
-                                {
-                                    "key": "token",
-                                    "value": "{{token}}",
-                                    "type": "string"
+                        {
+                            "name": "[Admin] Delete Category",
+                            "request": {
+                                "method": "DELETE",
+                                "header": [
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "url": {
+                                    "raw": "{{base_url}}/menu/categories/{{category_id}}",
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "menu",
+                                        "categories",
+                                        "{{category_id}}"
+                                    ]
+                                },
+                                "auth": {
+                                    "type": "bearer",
+                                    "bearer": [
+                                        {
+                                            "key": "token",
+                                            "value": "{{token}}",
+                                            "type": "string"
+                                        }
+                                    ]
                                 }
-                            ]
+                            },
+                            "response": []
+                        },
+                        {
+                            "name": "Get Menu Items by Category",
+                            "request": {
+                                "method": "GET",
+                                "header": [
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "url": {
+                                    "raw": "{{base_url}}/menu/categories/{{category_id}}/items",
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "menu",
+                                        "categories",
+                                        "{{category_id}}",
+                                        "items"
+                                    ]
+                                }
+                            },
+                            "response": []
                         }
-                    },
-                    "response": []
-                },
-                {
-                    "name": "Get Menu Items by Category",
-                    "request": {
-                        "method": "GET",
-                        "header": [
-                            {
-                                "key": "Content-Type",
-                                "value": "application/json"
-                            }
-                        ],
-                        "url": {
-                            "raw": "{{base_url}}/menu/categories/{{category_id}}/items",
-                            "host": [
-                                "{{base_url}}"
-                            ],
-                            "path": [
-                                "menu",
-                                "categories",
-                                "{{category_id}}",
-                                "items"
-                            ]
-                        }
-                    },
-                    "response": []
+                    ]
                 },
                 {
                     "name": "[Admin] Create Menu Item",
@@ -613,372 +618,382 @@
                     "response": []
                 },
                 {
-                    "name": "[Admin] Create Variant",
-                    "event": [
+                    "name": "VARIANTS",
+                    "item": [
                         {
-                            "listen": "test",
-                            "script": {
-                                "exec": [
-                                    "const res = pm.response.json();",
-                                    "if (res.data && res.data.id) {",
-                                    "  pm.collectionVariables.set('variant_id', res.data.id);",
-                                    "}"
+                            "name": "[Admin] Create Variant",
+                            "event": [
+                                {
+                                    "listen": "test",
+                                    "script": {
+                                        "exec": [
+                                            "const res = pm.response.json();",
+                                            "if (res.data && res.data.id) {",
+                                            "  pm.collectionVariables.set('variant_id', res.data.id);",
+                                            "}"
+                                        ],
+                                        "type": "text/javascript"
+                                    }
+                                }
+                            ],
+                            "request": {
+                                "method": "POST",
+                                "header": [
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    }
                                 ],
-                                "type": "text/javascript"
-                            }
-                        }
-                    ],
-                    "request": {
-                        "method": "POST",
-                        "header": [
-                            {
-                                "key": "Content-Type",
-                                "value": "application/json"
-                            }
-                        ],
-                        "url": {
-                            "raw": "{{base_url}}/menu/items/{{menu_item_id}}/variants",
-                            "host": [
-                                "{{base_url}}"
-                            ],
-                            "path": [
-                                "menu",
-                                "items",
-                                "{{menu_item_id}}",
-                                "variants"
-                            ]
-                        },
-                        "auth": {
-                            "type": "bearer",
-                            "bearer": [
-                                {
-                                    "key": "token",
-                                    "value": "{{token}}",
-                                    "type": "string"
+                                "url": {
+                                    "raw": "{{base_url}}/menu/items/{{menu_item_id}}/variants",
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "menu",
+                                        "items",
+                                        "{{menu_item_id}}",
+                                        "variants"
+                                    ]
+                                },
+                                "auth": {
+                                    "type": "bearer",
+                                    "bearer": [
+                                        {
+                                            "key": "token",
+                                            "value": "{{token}}",
+                                            "type": "string"
+                                        }
+                                    ]
+                                },
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n  \"name\": \"Size XL\",\n  \"extra_price\": 15000\n}",
+                                    "options": {
+                                        "raw": {
+                                            "language": "json"
+                                        }
+                                    }
                                 }
-                            ]
+                            },
+                            "response": []
                         },
-                        "body": {
-                            "mode": "raw",
-                            "raw": "{\n  \"name\": \"Size XL\",\n  \"extra_price\": 15000\n}",
-                            "options": {
-                                "raw": {
-                                    "language": "json"
-                                }
-                            }
-                        }
-                    },
-                    "response": []
-                },
-                {
-                    "name": "Get Variants by Menu Item",
-                    "request": {
-                        "method": "GET",
-                        "header": [
-                            {
-                                "key": "Content-Type",
-                                "value": "application/json"
-                            }
-                        ],
-                        "url": {
-                            "raw": "{{base_url}}/menu/items/{{menu_item_id}}/variants",
-                            "host": [
-                                "{{base_url}}"
-                            ],
-                            "path": [
-                                "menu",
-                                "items",
-                                "{{menu_item_id}}",
-                                "variants"
-                            ]
-                        }
-                    },
-                    "response": []
-                },
-                {
-                    "name": "Get Variant by ID",
-                    "request": {
-                        "method": "GET",
-                        "header": [
-                            {
-                                "key": "Content-Type",
-                                "value": "application/json"
-                            }
-                        ],
-                        "url": {
-                            "raw": "{{base_url}}/menu/variants/{{variant_id}}",
-                            "host": [
-                                "{{base_url}}"
-                            ],
-                            "path": [
-                                "menu",
-                                "variants",
-                                "{{variant_id}}"
-                            ]
-                        }
-                    },
-                    "response": []
-                },
-                {
-                    "name": "[Admin] Update Variant",
-                    "request": {
-                        "method": "PATCH",
-                        "header": [
-                            {
-                                "key": "Content-Type",
-                                "value": "application/json"
-                            }
-                        ],
-                        "url": {
-                            "raw": "{{base_url}}/menu/variants/{{variant_id}}",
-                            "host": [
-                                "{{base_url}}"
-                            ],
-                            "path": [
-                                "menu",
-                                "variants",
-                                "{{variant_id}}"
-                            ]
-                        },
-                        "auth": {
-                            "type": "bearer",
-                            "bearer": [
-                                {
-                                    "key": "token",
-                                    "value": "{{token}}",
-                                    "type": "string"
-                                }
-                            ]
-                        },
-                        "body": {
-                            "mode": "raw",
-                            "raw": "{\n  \"name\": \"Size XL Updated\",\n  \"extra_price\": 20000\n}",
-                            "options": {
-                                "raw": {
-                                    "language": "json"
-                                }
-                            }
-                        }
-                    },
-                    "response": []
-                },
-                {
-                    "name": "[Admin] Delete Variant",
-                    "request": {
-                        "method": "DELETE",
-                        "header": [
-                            {
-                                "key": "Content-Type",
-                                "value": "application/json"
-                            }
-                        ],
-                        "url": {
-                            "raw": "{{base_url}}/menu/variants/{{variant_id}}",
-                            "host": [
-                                "{{base_url}}"
-                            ],
-                            "path": [
-                                "menu",
-                                "variants",
-                                "{{variant_id}}"
-                            ]
-                        },
-                        "auth": {
-                            "type": "bearer",
-                            "bearer": [
-                                {
-                                    "key": "token",
-                                    "value": "{{token}}",
-                                    "type": "string"
-                                }
-                            ]
-                        }
-                    },
-                    "response": []
-                },
-                {
-                    "name": "[Admin] Create Modifier",
-                    "event": [
                         {
-                            "listen": "test",
-                            "script": {
-                                "exec": [
-                                    "const res = pm.response.json();",
-                                    "if (res.data && res.data.id) {",
-                                    "  pm.collectionVariables.set('modifier_id', res.data.id);",
-                                    "}"
+                            "name": "Get Variants by Menu Item",
+                            "request": {
+                                "method": "GET",
+                                "header": [
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    }
                                 ],
-                                "type": "text/javascript"
-                            }
-                        }
-                    ],
-                    "request": {
-                        "method": "POST",
-                        "header": [
-                            {
-                                "key": "Content-Type",
-                                "value": "application/json"
-                            }
-                        ],
-                        "url": {
-                            "raw": "{{base_url}}/menu/items/{{menu_item_id}}/modifiers",
-                            "host": [
-                                "{{base_url}}"
-                            ],
-                            "path": [
-                                "menu",
-                                "items",
-                                "{{menu_item_id}}",
-                                "modifiers"
-                            ]
+                                "url": {
+                                    "raw": "{{base_url}}/menu/items/{{menu_item_id}}/variants",
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "menu",
+                                        "items",
+                                        "{{menu_item_id}}",
+                                        "variants"
+                                    ]
+                                }
+                            },
+                            "response": []
                         },
-                        "auth": {
-                            "type": "bearer",
-                            "bearer": [
+                        {
+                            "name": "Get Variant by ID",
+                            "request": {
+                                "method": "GET",
+                                "header": [
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "url": {
+                                    "raw": "{{base_url}}/menu/variants/{{variant_id}}",
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "menu",
+                                        "variants",
+                                        "{{variant_id}}"
+                                    ]
+                                }
+                            },
+                            "response": []
+                        },
+                        {
+                            "name": "[Admin] Update Variant",
+                            "request": {
+                                "method": "PATCH",
+                                "header": [
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "url": {
+                                    "raw": "{{base_url}}/menu/variants/{{variant_id}}",
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "menu",
+                                        "variants",
+                                        "{{variant_id}}"
+                                    ]
+                                },
+                                "auth": {
+                                    "type": "bearer",
+                                    "bearer": [
+                                        {
+                                            "key": "token",
+                                            "value": "{{token}}",
+                                            "type": "string"
+                                        }
+                                    ]
+                                },
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n  \"name\": \"Size XL Updated\",\n  \"extra_price\": 20000\n}",
+                                    "options": {
+                                        "raw": {
+                                            "language": "json"
+                                        }
+                                    }
+                                }
+                            },
+                            "response": []
+                        },
+                        {
+                            "name": "[Admin] Delete Variant",
+                            "request": {
+                                "method": "DELETE",
+                                "header": [
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "url": {
+                                    "raw": "{{base_url}}/menu/variants/{{variant_id}}",
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "menu",
+                                        "variants",
+                                        "{{variant_id}}"
+                                    ]
+                                },
+                                "auth": {
+                                    "type": "bearer",
+                                    "bearer": [
+                                        {
+                                            "key": "token",
+                                            "value": "{{token}}",
+                                            "type": "string"
+                                        }
+                                    ]
+                                }
+                            },
+                            "response": []
+                        }
+                    ]
+                },
+                {
+                    "name": "MODIFIERS",
+                    "item": [
+                        {
+                            "name": "[Admin] Create Modifier",
+                            "event": [
                                 {
-                                    "key": "token",
-                                    "value": "{{token}}",
-                                    "type": "string"
+                                    "listen": "test",
+                                    "script": {
+                                        "exec": [
+                                            "const res = pm.response.json();",
+                                            "if (res.data && res.data.id) {",
+                                            "  pm.collectionVariables.set('modifier_id', res.data.id);",
+                                            "}"
+                                        ],
+                                        "type": "text/javascript"
+                                    }
                                 }
-                            ]
-                        },
-                        "body": {
-                            "mode": "raw",
-                            "raw": "{\n  \"name\": \"Thêm trứng\",\n  \"extra_price\": 5000,\n  \"is_required\": false\n}",
-                            "options": {
-                                "raw": {
-                                    "language": "json"
-                                }
-                            }
-                        }
-                    },
-                    "response": []
-                },
-                {
-                    "name": "Get Modifiers by Menu Item",
-                    "request": {
-                        "method": "GET",
-                        "header": [
-                            {
-                                "key": "Content-Type",
-                                "value": "application/json"
-                            }
-                        ],
-                        "url": {
-                            "raw": "{{base_url}}/menu/items/{{menu_item_id}}/modifiers",
-                            "host": [
-                                "{{base_url}}"
                             ],
-                            "path": [
-                                "menu",
-                                "items",
-                                "{{menu_item_id}}",
-                                "modifiers"
-                            ]
-                        }
-                    },
-                    "response": []
-                },
-                {
-                    "name": "Get Modifier by ID",
-                    "request": {
-                        "method": "GET",
-                        "header": [
-                            {
-                                "key": "Content-Type",
-                                "value": "application/json"
-                            }
-                        ],
-                        "url": {
-                            "raw": "{{base_url}}/menu/modifiers/{{modifier_id}}",
-                            "host": [
-                                "{{base_url}}"
-                            ],
-                            "path": [
-                                "menu",
-                                "modifiers",
-                                "{{modifier_id}}"
-                            ]
-                        }
-                    },
-                    "response": []
-                },
-                {
-                    "name": "[Admin] Update Modifier",
-                    "request": {
-                        "method": "PATCH",
-                        "header": [
-                            {
-                                "key": "Content-Type",
-                                "value": "application/json"
-                            }
-                        ],
-                        "url": {
-                            "raw": "{{base_url}}/menu/modifiers/{{modifier_id}}",
-                            "host": [
-                                "{{base_url}}"
-                            ],
-                            "path": [
-                                "menu",
-                                "modifiers",
-                                "{{modifier_id}}"
-                            ]
-                        },
-                        "auth": {
-                            "type": "bearer",
-                            "bearer": [
-                                {
-                                    "key": "token",
-                                    "value": "{{token}}",
-                                    "type": "string"
+                            "request": {
+                                "method": "POST",
+                                "header": [
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "url": {
+                                    "raw": "{{base_url}}/menu/items/{{menu_item_id}}/modifiers",
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "menu",
+                                        "items",
+                                        "{{menu_item_id}}",
+                                        "modifiers"
+                                    ]
+                                },
+                                "auth": {
+                                    "type": "bearer",
+                                    "bearer": [
+                                        {
+                                            "key": "token",
+                                            "value": "{{token}}",
+                                            "type": "string"
+                                        }
+                                    ]
+                                },
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n  \"name\": \"Thêm trứng\",\n  \"extra_price\": 5000,\n  \"is_required\": false\n}",
+                                    "options": {
+                                        "raw": {
+                                            "language": "json"
+                                        }
+                                    }
                                 }
-                            ]
+                            },
+                            "response": []
                         },
-                        "body": {
-                            "mode": "raw",
-                            "raw": "{\n  \"name\": \"Thêm trứng ốp\",\n  \"extra_price\": 8000,\n  \"is_required\": false\n}",
-                            "options": {
-                                "raw": {
-                                    "language": "json"
+                        {
+                            "name": "Get Modifiers by Menu Item",
+                            "request": {
+                                "method": "GET",
+                                "header": [
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "url": {
+                                    "raw": "{{base_url}}/menu/items/{{menu_item_id}}/modifiers",
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "menu",
+                                        "items",
+                                        "{{menu_item_id}}",
+                                        "modifiers"
+                                    ]
                                 }
-                            }
-                        }
-                    },
-                    "response": []
-                },
-                {
-                    "name": "[Admin] Delete Modifier",
-                    "request": {
-                        "method": "DELETE",
-                        "header": [
-                            {
-                                "key": "Content-Type",
-                                "value": "application/json"
-                            }
-                        ],
-                        "url": {
-                            "raw": "{{base_url}}/menu/modifiers/{{modifier_id}}",
-                            "host": [
-                                "{{base_url}}"
-                            ],
-                            "path": [
-                                "menu",
-                                "modifiers",
-                                "{{modifier_id}}"
-                            ]
+                            },
+                            "response": []
                         },
-                        "auth": {
-                            "type": "bearer",
-                            "bearer": [
-                                {
-                                    "key": "token",
-                                    "value": "{{token}}",
-                                    "type": "string"
+                        {
+                            "name": "Get Modifier by ID",
+                            "request": {
+                                "method": "GET",
+                                "header": [
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "url": {
+                                    "raw": "{{base_url}}/menu/modifiers/{{modifier_id}}",
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "menu",
+                                        "modifiers",
+                                        "{{modifier_id}}"
+                                    ]
                                 }
-                            ]
+                            },
+                            "response": []
+                        },
+                        {
+                            "name": "[Admin] Update Modifier",
+                            "request": {
+                                "method": "PATCH",
+                                "header": [
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "url": {
+                                    "raw": "{{base_url}}/menu/modifiers/{{modifier_id}}",
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "menu",
+                                        "modifiers",
+                                        "{{modifier_id}}"
+                                    ]
+                                },
+                                "auth": {
+                                    "type": "bearer",
+                                    "bearer": [
+                                        {
+                                            "key": "token",
+                                            "value": "{{token}}",
+                                            "type": "string"
+                                        }
+                                    ]
+                                },
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n  \"name\": \"Thêm trứng ốp\",\n  \"extra_price\": 8000,\n  \"is_required\": false\n}",
+                                    "options": {
+                                        "raw": {
+                                            "language": "json"
+                                        }
+                                    }
+                                }
+                            },
+                            "response": []
+                        },
+                        {
+                            "name": "[Admin] Delete Modifier",
+                            "request": {
+                                "method": "DELETE",
+                                "header": [
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "url": {
+                                    "raw": "{{base_url}}/menu/modifiers/{{modifier_id}}",
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "menu",
+                                        "modifiers",
+                                        "{{modifier_id}}"
+                                    ]
+                                },
+                                "auth": {
+                                    "type": "bearer",
+                                    "bearer": [
+                                        {
+                                            "key": "token",
+                                            "value": "{{token}}",
+                                            "type": "string"
+                                        }
+                                    ]
+                                }
+                            },
+                            "response": []
                         }
-                    },
-                    "response": []
+                    ]
                 },
                 {
                     "name": "[Admin] Delete Menu Item",
