@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'table_provider.dart';
+import '../../models/table.dart';
 import '../../widgets/table_tile.dart';
 
 class TableGrid extends ConsumerWidget {
-  const TableGrid({super.key});
+  final void Function(TableModel table)? onTableTap;
+  
+  const TableGrid({super.key, this.onTableTap});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -29,7 +32,7 @@ class TableGrid extends ConsumerWidget {
             return TableTile(
               table: table,
               onTap: () {
-                // Hành động khi bấm vào bàn
+                if (onTableTap != null) onTableTap!(table);
               },
             );
           },

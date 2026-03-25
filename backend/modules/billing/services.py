@@ -60,12 +60,12 @@ async def create_bill(db: Session, payload: BillCreate) -> Bill:
     if not order:
         raise HTTPException(status_code=404, detail="Order not found")
 
-    # Check no existing PENDING or PAID bill for this order
-    existing = db.query(Bill).filter(Bill.order_id == payload.order_id).first()
-    if existing:
+    # Check if a pending bill exists; if PAID, we deny modification
+    existing = db.query(Bill).filter(Bill.order_id == payload.order_id, Bill.status == BillStatus.PENDING).first()
+    if not existing and db.query(Bill).filter(Bill.order_id == payload.order_id, Bill.status == BillStatus.PAID).first():
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
-            detail="A bill already exists for this order",
+            detail="A bill already exists and is PAID for this order",
         )
 
     # Subtotal = sum of (price × qty) for all order items
@@ -76,6 +76,15 @@ async def create_bill(db: Session, payload: BillCreate) -> Bill:
     tax = (subtotal * vat_rate).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
     service_fee = (subtotal * svc_rate).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
     total = subtotal + tax + service_fee
+
+    if existing:
+        existing.subtotal = float(subtotal)
+        existing.tax = float(tax)
+        existing.service_fee = float(service_fee)
+        existing.total = float(total)
+        db.commit()
+        db.refresh(existing)
+        return existing
 
     bill = Bill(
         order_id=order.id,
