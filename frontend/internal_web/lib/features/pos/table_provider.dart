@@ -27,18 +27,7 @@ class TableNotifier extends Notifier<AsyncValue<List<TableModel>>> {
       final tables = data.map((e) => TableModel.fromJson(e)).toList();
       state = AsyncValue.data(tables);
     } catch (e, st) {
-      // Fallback to mock data for UI preview if API fails
-      final mockTables = [
-        TableModel(id: '1', zone: 'T1', number: 1, qrToken: '', status: TableStatus.occupied),
-        TableModel(id: '2', zone: 'T1', number: 2, qrToken: '', status: TableStatus.empty),
-        TableModel(id: '3', zone: 'T1', number: 3, qrToken: '', status: TableStatus.reserved),
-        TableModel(id: '4', zone: 'T1', number: 4, qrToken: '', status: TableStatus.cleaning),
-        TableModel(id: '5', zone: 'T1', number: 5, qrToken: '', status: TableStatus.empty),
-        TableModel(id: '6', zone: 'T1', number: 6, qrToken: '', status: TableStatus.occupied),
-        TableModel(id: '7', zone: 'T2', number: 1, qrToken: '', status: TableStatus.empty),
-        TableModel(id: '8', zone: 'T2', number: 2, qrToken: '', status: TableStatus.reserved),
-      ];
-      state = AsyncValue.data(mockTables);
+      state = AsyncValue.error(e, st);
     }
   }
 
