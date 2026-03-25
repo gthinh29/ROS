@@ -52,4 +52,22 @@ class OrderItemModel {
       createdAt: createdAt ?? this.createdAt,
     );
   }
+
+  factory OrderItemModel.fromJson(Map<String, dynamic> json) {
+    return OrderItemModel(
+      id: json['order_item_id'] ?? json['id'] ?? '',
+      orderId: json['order_id'] ?? '',
+      menuItemId: json['menu_item_id'] ?? '',
+      menuItemName: json['menu_item_name'] ?? 'Unknown Item',
+      variantName: json['variant_name'],
+      qty: json['qty'] ?? 1,
+      note: json['note'],
+      status: OrderItemStatus.values.firstWhere(
+        (e) => e.name.toUpperCase() == (json['status']?.toString().toUpperCase() ?? 'PENDING'),
+        orElse: () => OrderItemStatus.pending,
+      ),
+      tableNumber: json['table_number']?.toString() ?? json['table_id']?.toString() ?? '?',
+      createdAt: json['created_at'] != null ? DateTime.tryParse(json['created_at']) ?? DateTime.now() : DateTime.now(),
+    );
+  }
 }

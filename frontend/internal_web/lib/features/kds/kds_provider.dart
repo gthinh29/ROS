@@ -22,41 +22,12 @@ class KdsNotifier extends Notifier<AsyncValue<List<OrderItemModel>>> {
 
   Future<void> _fetchKdsItems() async {
     try {
-      // In a real app, this would be GET /orders (filtered for KDS zone)
-      final response = await apiClient.get('/orders');
-      throw Exception('Mock trigger'); // Force fallback
-    } catch (e) {
-      // Fallback for UI Preview
-      final mockItems = [
-        OrderItemModel(
-          id: '1', orderId: 'o1', menuItemId: 'm1', menuItemName: 'Phở Bò',
-          variantName: 'Tô vừa', qty: 1, note: 'Ít bánh', 
-          status: OrderItemStatus.pending, tableNumber: '1', 
-          createdAt: DateTime.now().subtract(const Duration(minutes: 5)),
-        ),
-        OrderItemModel(
-          id: '2', orderId: 'o2', menuItemId: 'm1', menuItemName: 'Phở Bò',
-          variantName: 'Tô vừa', qty: 1, note: 'Ít bánh', 
-          status: OrderItemStatus.pending, tableNumber: '2', 
-          createdAt: DateTime.now().subtract(const Duration(minutes: 3)),
-        ),
-        OrderItemModel(
-          id: '3', orderId: 'o3', menuItemId: 'm2', menuItemName: 'Cơm Tấm sườn bì chả',
-          qty: 1, status: OrderItemStatus.pending, tableNumber: '3', 
-          createdAt: DateTime.now().subtract(const Duration(minutes: 8)),
-        ),
-        OrderItemModel(
-          id: '4', orderId: 'o4', menuItemId: 'm3', menuItemName: 'Trà đá',
-          qty: 2, status: OrderItemStatus.preparing, tableNumber: '4', 
-          createdAt: DateTime.now().subtract(const Duration(minutes: 12)),
-        ),
-        OrderItemModel(
-          id: '5', orderId: 'o4', menuItemId: 'm3', menuItemName: 'Salad gà',
-          qty: 1, status: OrderItemStatus.ready, tableNumber: '4', 
-          createdAt: DateTime.now().subtract(const Duration(minutes: 18)),
-        ),
-      ];
-      state = AsyncValue.data(mockItems);
+      final response = await apiClient.get('/orders/kds/items?zone=kitchen');
+      final List<dynamic> data = response.data['data'] ?? response.data ?? [];
+      final items = data.map((e) => OrderItemModel.fromJson(e)).toList();
+      state = AsyncValue.data(items);
+    } catch (e, st) {
+      state = AsyncValue.error(e, st);
     }
   }
 
@@ -64,7 +35,14 @@ class KdsNotifier extends Notifier<AsyncValue<List<OrderItemModel>>> {
     try {
       _channel = WebSocketChannel.connect(Uri.parse('${AppConstants.wsUrl}/kds/kitchen'));
       _channel!.stream.listen((message) {
-         // handle realtime message
+        try {
+          final data = jsonDecode(message);
+          if (data['event'] == 'new_order_items' && data['items'] != null) {
+            final newItems = (data['items'] as List).map((e) => OrderItemModel.fromJson(e)).toList();
+            final currentList = state.value ?? [];
+            state = AsyncValue.data([...newItems, ...currentList]);
+          }
+        } catch (_) {}
       });
     } catch (_) {}
   }
@@ -81,9 +59,12 @@ class KdsNotifier extends Notifier<AsyncValue<List<OrderItemModel>>> {
 
     // 2. Call API
     try {
-      // await apiClient.patch('/orders/item/$itemId/status', data: {'status': newStatus.name.toUpperCase()});
+      final orderId = state.value?.firstWhere((e) => e.id == itemId).orderId;
+      if (orderId != null) {
+        await apiClient.patch('/orders/$orderId/items/$itemId/status', data: {'status': newStatus.name.toUpperCase()});
+      }
     } catch (e) {
-      // print('API error $e');
+      print('API error $e');
     }
   }
 }
