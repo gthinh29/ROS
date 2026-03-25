@@ -1,0 +1,17 @@
+{
+  "pythonVersion": "3.12",
+  "venvPath": "backend",
+  "venv": "venv",
+  "include": ["backend"],
+  "exclude": [
+    "backend/venv",
+    "backend/__pycache__",
+    "backend/.pytest_cache",
+    "backend/.ruff_cache",
+    "backend/alembic/versions"
+  ],
+  "extraPaths": ["backend"],
+  "typeCheckingMode": "basic",
+  "reportMissingImports": "none",
+  "reportMissingModuleSource": "none"
+}
