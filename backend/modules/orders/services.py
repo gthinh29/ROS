@@ -343,3 +343,45 @@ async def update_item_status(
             pass
             
     return item
+
+
+async def get_active_kds_items(db: Session, zone: str) -> list[dict]:
+    from modules.tables.models import Table
+    items = (
+        db.query(OrderItem, Order, MenuItem, Variant, Table)
+        .join(Order, Order.id == OrderItem.order_id)
+        .join(MenuItem, MenuItem.id == OrderItem.menu_item_id)
+        .outerjoin(Variant, Variant.id == OrderItem.variant_id)
+        .outerjoin(Table, Table.id == Order.table_id)
+        .filter(
+            OrderItem.status.in_([OrderItemStatus.PENDING, OrderItemStatus.PREPARING, OrderItemStatus.READY]),
+            MenuItem.kds_zone == zone
+        )
+        .all()
+    )
+    
+    result = []
+    for order_item, order, menu_item, variant, table in items:
+        from modules.menu.models import Modifier
+        from modules.orders.models import OrderModifier
+        modifiers = (
+            db.query(Modifier)
+            .join(OrderModifier, OrderModifier.modifier_id == Modifier.id)
+            .filter(OrderModifier.order_item_id == order_item.id)
+            .all()
+        )
+        result.append({
+            "id": str(order_item.id),
+            "order_item_id": str(order_item.id),
+            "order_id": str(order.id),
+            "menu_item_name": menu_item.name,
+            "variant_name": variant.name if variant else None,
+            "modifier_names": [m.name for m in modifiers],
+            "qty": order_item.qty,
+            "note": order_item.note,
+            "table_id": str(order.table_id) if order.table_id else None,
+            "table_number": str(table.number) if table else None,
+            "zone": menu_item.kds_zone,
+            "status": order_item.status.value,
+        })
+    return result

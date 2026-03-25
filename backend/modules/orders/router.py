@@ -72,3 +72,14 @@ async def update_item_status(
     """
     await services.update_item_status(db, order_id, item_id, payload)
     return ResponseWrapper.success_response({"message": "Item status updated"})
+
+
+@router.get("/kds/items", response_model=ResponseWrapper[list[dict]], response_model_exclude_none=True)
+async def get_active_kds_items(
+    zone: str = "kitchen",
+    db: Session = Depends(get_db),
+    current_user: dict = require_role(IS_KITCHEN_OR_WAITER),
+):
+    """Fetch all active pending/preparing items for KDS."""
+    result = await services.get_active_kds_items(db, zone)
+    return ResponseWrapper.success_response(result)

@@ -1,4 +1,5 @@
 from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
 
 from core.config import settings
 from modules.auth.router import router as auth_router
@@ -36,6 +37,13 @@ app.include_router(reservations_router)
 
 # ── Register middlewares ───────────────────────────────────────────
 app.add_middleware(JWTAuthenticationMiddleware)
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=False,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 # ── Register handlers ─────────────────────────────────────────────────
 app.add_exception_handler(HTTPException, http_exception_handler)
