@@ -15,7 +15,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from core.enums import OrderItemStatus, OrderStatus, TableStatus
-from modules.inventory.models import BOMItem, Ingredient
+from modules.inventory.models import BOMItem, Ingredient, InventoryLog
 from modules.menu.models import MenuItem, Modifier, Variant
 from modules.orders.models import Order, OrderItem, OrderModifier
 from modules.orders.schemas import OrderCreate, OrderItemStatusUpdate
@@ -116,6 +116,55 @@ def _check_and_lock_inventory(
                 status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
                 detail=f"Not enough '{ing.name}': need {required}{ing.unit}, have {ing.stock_qty}{ing.unit}",
             )
+
+
+def _deduct_inventory_for_served_item(db: Session, order: Order, item: OrderItem) -> None:
+    """
+    Deduct inventory based on BOM when an order-item is marked as SERVED.
+    Uses row-level locks to avoid concurrent over-deduction.
+    """
+    bom_rows = (
+        db.query(BOMItem)
+        .filter(
+            BOMItem.menu_item_id == item.menu_item_id,
+            BOMItem.variant_id == item.variant_id,
+        )
+        .all()
+    )
+    if not bom_rows:
+        return
+
+    ingredient_ids = [row.ingredient_id for row in bom_rows]
+    locked_ingredients: list[Ingredient] = (
+        db.execute(
+            select(Ingredient)
+            .where(Ingredient.id.in_(ingredient_ids))
+            .with_for_update()
+        )
+        .scalars()
+        .all()
+    )
+    ingredient_map = {ing.id: ing for ing in locked_ingredients}
+
+    for bom in bom_rows:
+        ingredient = ingredient_map.get(bom.ingredient_id)
+        if ingredient is None:
+            raise HTTPException(status_code=500, detail="Ingredient not found in inventory")
+
+        required = Decimal(str(bom.qty_required)) * Decimal(str(item.qty))
+        if Decimal(str(ingredient.stock_qty)) < required:
+            raise HTTPException(
+                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                detail=f"Not enough '{ingredient.name}' to serve item: need {required}{ingredient.unit}, have {ingredient.stock_qty}{ingredient.unit}",
+            )
+
+        ingredient.stock_qty = Decimal(str(ingredient.stock_qty)) - required
+        db.add(InventoryLog(
+            ingredient_id=ingredient.id,
+            delta=-required,
+            reason=f"Auto-deducted {required} for order item {item.id}",
+            order_id=order.id,
+        ))
 
 
 # ── Services ──────────────────────────────────────────────────────────────────
@@ -270,6 +319,9 @@ async def update_item_status(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=f"Cannot transition from '{item.status}' to '{payload.status}'",
         )
+
+    if payload.status == OrderItemStatus.SERVED:
+        _deduct_inventory_for_served_item(db, order, item)
 
     item.status = payload.status
     db.commit()
