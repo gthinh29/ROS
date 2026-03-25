@@ -22,12 +22,7 @@ services:
   api:
     build: ./backend
     restart: unless-stopped
-    env_file:
-      - path: ./backend/.env.example
-        required: true
-      - path: ./backend/.env
-        required: false
-
+    env_file: ./backend/.env          # load SECRET_KEY, JWT config, etc. từ .env
     environment:
       # Override DATABASE_URL để dùng hostname Docker internal ("postgres")
       # thay vì "localhost" trong .env (vốn dành cho local dev ngoài Docker)
@@ -42,7 +37,7 @@ services:
       - ./backend:/app                # hot-reload: source code mounted into /app
       - /app/venv                     # exclude venv from host mount
     healthcheck:
-      test: ["CMD-SHELL", "python -c \"import urllib.request; urllib.request.urlopen('http://localhost:8000/health')\" || exit 1"]
+      test: ["CMD-SHELL", "curl -f http://localhost:8000/health || exit 1"]
       interval: 10s
       timeout: 5s
       retries: 5

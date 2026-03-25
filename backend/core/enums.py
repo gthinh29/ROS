@@ -13,20 +13,13 @@ class UserRole(str, enum.Enum):
 class TableStatus(str, enum.Enum):
     EMPTY = "EMPTY"
     OCCUPIED = "OCCUPIED"
-    RESERVED = "RESERVED"
+    WAITING = "WAITING"
     CLEANING = "CLEANING"
-
-
-class ReservationStatus(str, enum.Enum):
-    PENDING = "PENDING"
-    CONFIRMED = "CONFIRMED"
-    CHECKED_IN = "CHECKED_IN"
-    CANCELLED = "CANCELLED"
 
 
 class OrderType(str, enum.Enum):
     DINE_IN = "DINE_IN"
-    PRE_ORDER = "PRE_ORDER"
+    TAKEAWAY = "TAKEAWAY"
 
 
 class OrderStatus(str, enum.Enum):
@@ -46,10 +39,11 @@ class OrderItemStatus(str, enum.Enum):
 
 class PaymentMethod(str, enum.Enum):
     CASH = "CASH"
-    VIETQR = "VIETQR"
+    QR = "QR"
     CARD = "CARD"
 
 
 class BillStatus(str, enum.Enum):
     PENDING = "PENDING"
     PAID = "PAID"
+    CANCELLED = "CANCELLED"

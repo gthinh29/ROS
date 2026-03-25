@@ -25,21 +25,13 @@ DEFAULT_PASSWORD = "123456"
 def seed():
     db = SessionLocal()
     try:
-        # ── Guard: idempotent — bỏ qua nếu DB đã có dữ liệu ─────────
-        from modules.auth.models import User as _User
-        existing = db.query(_User).first()
-        if existing:
-            print("⚠️  Seed đã chạy trước đó (users tồn tại). Bỏ qua để tránh duplicate.")
-            print("   Nếu muốn seed lại: chạy 'alembic downgrade base && alembic upgrade head' trước.")
-            return
-
         # ── 1. Restaurant ────────────────────────────────────────────
         restaurant = Restaurant(
             name="Demo Restaurant",
             settings={
-                "vat_percent": 8,
-                "service_fee_percent": 5,
-                "logo_url": "",
+                "vat_rate": 0.1,
+                "service_fee_rate": 0.05,
+                "logo_url": None,
             },
         )
         db.add(restaurant)
@@ -166,29 +158,22 @@ def seed():
         print("✓ Modifiers: 4 tùy chọn")
 
         # ── 5. Tables ────────────────────────────────────────────────
-        import uuid as _uuid
         tables = []
         for i in range(1, 6):
-            tbl_id = _uuid.uuid4()
             tables.append(
                 Table(
-                    id=tbl_id,
                     restaurant_id=restaurant.id,
                     zone="Zone A",
                     number=i,
-                    qr_token=str(tbl_id),
                     status=TableStatus.EMPTY,
                 )
             )
         for i in range(6, 11):
-            tbl_id = _uuid.uuid4()
             tables.append(
                 Table(
-                    id=tbl_id,
                     restaurant_id=restaurant.id,
                     zone="Zone B",
                     number=i,
-                    qr_token=str(tbl_id),
                     status=TableStatus.EMPTY,
                 )
             )

@@ -1,10 +1,11 @@
 from typing import Generic, TypeVar, Optional
 from pydantic import BaseModel
+from pydantic.generics import GenericModel
 
 T = TypeVar('T')
 
 # A generic response wrapper to standardize API responses
-class ResponseWrapper(BaseModel, Generic[T]):
+class ResponseWrapper(GenericModel, Generic[T]):
     success: bool
     data: Optional[T] = None
     error_message: Optional[str] = None

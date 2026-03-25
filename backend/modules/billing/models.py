@@ -2,7 +2,7 @@
 
 import uuid
 
-from sqlalchemy import DateTime, Enum, ForeignKey, Numeric, func
+from sqlalchemy import DateTime, Enum, ForeignKey, Numeric, String, func
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column
 
@@ -28,12 +28,11 @@ class Bill(Base):
         Enum(PaymentMethod, name="paymentmethod", create_constraint=True),
         nullable=True,
     )
-    paid_amount: Mapped[float | None] = mapped_column(Numeric(14, 2), nullable=True)
-    change_amount: Mapped[float | None] = mapped_column(Numeric(14, 2), nullable=True)
     status: Mapped[BillStatus] = mapped_column(
         Enum(BillStatus, name="billstatus", create_constraint=True),
         default=BillStatus.PENDING,
     )
+    voucher_code: Mapped[str | None] = mapped_column(String(50), nullable=True)
     created_at: Mapped[str] = mapped_column(
         DateTime(timezone=True), server_default=func.now()
     )

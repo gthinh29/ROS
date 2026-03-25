@@ -65,14 +65,13 @@ cd restaurant-system
 
 ### 2. Cấu hình environment
 
-**Nếu bạn chạy bằng Docker Compose:**
-Hệ thống **tự động** nhận diện file cấu hình mẫu `.env.example`. Bạn **KHÔNG CẦN** làm gì thêm ở bước này. Chỉ cần gõ lệnh `docker-compose up` là chạy.
-
-*(Chỉ dành cho ai debug trực tiếp local bằng lệnh python, không dùng docker)*:
 ```bash
 cp backend/.env.example backend/.env
 ```
 
+> **Lưu ý:** Không cần chỉnh `DATABASE_URL` khi chạy bằng Docker Compose —
+> host kết nối DB được tự động override trong `docker-compose.yml`.
+> Chỉ sửa `SECRET_KEY` nếu deploy production.
 
 ### 3. Khởi động backend + database
 
