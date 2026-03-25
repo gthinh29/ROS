@@ -33,20 +33,30 @@ class AuthNotifier extends Notifier<AuthState> {
   Future<bool> login(String email, String password) async {
     state = state.copyWith(isLoading: true, clearError: true);
     try {
-      // Mock login for UI Preview
+      final response = await apiClient.post('/auth/login', data: {
+        'email': email,
+        'password': password,
+      });
+      final data = response.data['data'] ?? response.data;
+      final token = data['access_token'];
+      if (token != null) {
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString('access_token', token);
+      }
+
       UserRole getRole(String email) {
         if (email.contains('admin')) return UserRole.admin;
         if (email.contains('cashier')) return UserRole.cashier;
         if (email.contains('waiter')) return UserRole.waiter;
         if (email.contains('kitchen')) return UserRole.kitchen;
-        if (email.contains('bar')) return UserRole.bar;
-        return UserRole.admin; // default to admin
+        if (email.contains('bar')) return UserRole.kitchen;
+        return UserRole.admin;
       }
       
       final user = User(
-        id: 'mock-1',
+        id: 'real',
         email: email,
-        name: 'Preview User',
+        name: 'Staff',
         role: getRole(email),
       );
       
