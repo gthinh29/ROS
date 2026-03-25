@@ -18,10 +18,6 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from core.database import Base
 from core.enums import OrderItemStatus, OrderStatus, OrderType
 
-# Đảm bảo các bảng liên quan đã được nạp vào MetaData trước khi SQLAlchemy ánh xạ bảng Orders
-import modules.tables.models  # noqa: F401
-import modules.reservations.models  # noqa: F401
-
 
 class Order(Base):
     __tablename__ = "orders"
@@ -31,9 +27,6 @@ class Order(Base):
     )
     table_id: Mapped[uuid.UUID | None] = mapped_column(
         UUID(as_uuid=True), ForeignKey("tables.id"), nullable=True
-    )
-    reservation_id: Mapped[uuid.UUID | None] = mapped_column(
-        UUID(as_uuid=True), ForeignKey("reservations.id"), nullable=True
     )
     customer_name: Mapped[str | None] = mapped_column(String(100), nullable=True)
     phone: Mapped[str | None] = mapped_column(String(20), nullable=True)
@@ -77,7 +70,7 @@ class OrderItem(Base):
         UUID(as_uuid=True), ForeignKey("variants.id"), nullable=True
     )
     qty: Mapped[int] = mapped_column(Integer, nullable=False, default=1)
-    price: Mapped[float] = mapped_column(Numeric(12, 2), nullable=False)
+    unit_price: Mapped[float] = mapped_column(Numeric(12, 2), nullable=False)
     note: Mapped[str | None] = mapped_column(Text, nullable=True)
     status: Mapped[OrderItemStatus] = mapped_column(
         Enum(OrderItemStatus, name="orderitemstatus", create_constraint=True),

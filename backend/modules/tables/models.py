@@ -49,7 +49,7 @@ class Table(Base):
     )
     zone: Mapped[str] = mapped_column(String(50), nullable=False)
     number: Mapped[int] = mapped_column(Integer, nullable=False)
-    qr_token: Mapped[str | None] = mapped_column(Text, nullable=True, unique=True)
+    qr_code: Mapped[str | None] = mapped_column(Text, nullable=True)
     status: Mapped[TableStatus] = mapped_column(
         Enum(TableStatus, name="tablestatus", create_constraint=True),
         default=TableStatus.EMPTY,

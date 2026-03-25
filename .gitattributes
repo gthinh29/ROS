@@ -1,2 +1,0 @@
-# Cấu hình để ép các file shell-script thành dạng kết thúc dòng (EOL) là LF cho mọi HDH (kể cả Windows)
-*.sh text eol=lf
