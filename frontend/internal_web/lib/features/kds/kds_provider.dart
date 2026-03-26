@@ -12,11 +12,11 @@ class KdsNotifier extends Notifier<AsyncValue<List<OrderItemModel>>> {
   AsyncValue<List<OrderItemModel>> build() {
     _fetchKdsItems();
     _connectWebSocket();
-    
+
     ref.onDispose(() {
       _channel?.sink.close();
     });
-    
+
     return const AsyncValue.loading();
   }
 
@@ -45,14 +45,26 @@ class KdsNotifier extends Notifier<AsyncValue<List<OrderItemModel>>> {
             final itemId = data['item_id'];
             final statusStr = data['status'];
             final currentList = state.value ?? [];
-            if (statusStr == 'SERVED' || statusStr == 'CANCELLED') {
+
+            if (statusStr == 'SERVED') {
+              // Món đã được bưng ra → xóa khỏi màn hình ngay
               state = AsyncValue.data(currentList.where((e) => e.id != itemId).toList());
+            } else if (statusStr == 'CANCELLED') {
+              // Món bị hủy (ví dụ do khách checkout) → hiển thị ĐÃ HỦY, chờ dọn dẹp
+              state = AsyncValue.data(currentList.map((e) =>
+                e.id == itemId ? e.copyWith(status: OrderItemStatus.cancelled) : e
+              ).toList());
             } else {
+              // Cập nhật trạng thái bình thường (PENDING→PREPARING→READY)
               final status = OrderItemStatus.values.firstWhere(
-                (e) => e.name.toUpperCase() == statusStr.toString().toUpperCase(), 
+                (e) => e.name.toUpperCase() == statusStr.toString().toUpperCase(),
                 orElse: () => OrderItemStatus.pending
               );
-              state = AsyncValue.data(currentList.map((e) => e.id == itemId ? e.copyWith(status: status) : e).toList());
+              final updatedList = currentList.map((e) =>
+                e.id == itemId ? e.copyWith(status: status) : e
+              ).toList();
+              updatedList.sort((a, b) => a.status.index.compareTo(b.status.index));
+              state = AsyncValue.data(updatedList);
             }
           }
         } catch (_) {}
@@ -60,14 +72,22 @@ class KdsNotifier extends Notifier<AsyncValue<List<OrderItemModel>>> {
     } catch (_) {}
   }
 
+  /// Xóa tất cả món đã bị HỦY khỏi danh sách KDS (nút "Dọn dẹp")
+  void clearCancelledItems() {
+    final currentList = state.value ?? [];
+    state = AsyncValue.data(
+      currentList.where((e) => e.status != OrderItemStatus.cancelled).toList()
+    );
+  }
+
   Future<void> updateStatus(String itemId, OrderItemStatus newStatus) async {
     // 1. Optimistic update
     final currentList = state.value ?? [];
     final updatedList = currentList.map((e) => e.id == itemId ? e.copyWith(status: newStatus) : e).toList();
-    
+
     // Sort so ready is last, pending is first
     updatedList.sort((a, b) => a.status.index.compareTo(b.status.index));
-    
+
     state = AsyncValue.data(updatedList);
 
     // 2. Call API
@@ -83,3 +103,4 @@ class KdsNotifier extends Notifier<AsyncValue<List<OrderItemModel>>> {
 }
 
 final kdsProvider = NotifierProvider<KdsNotifier, AsyncValue<List<OrderItemModel>>>(KdsNotifier.new);
+

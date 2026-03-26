@@ -12,6 +12,10 @@ class BillModel {
   final double? paidAmount;
   final double? changeAmount;
   final BillStatus status;
+  // Thông tin khách + bàn (từ backend enriched response)
+  final String? customerName;
+  final String? phone;
+  final String? tableNumber;
 
   BillModel({
     required this.id,
@@ -25,6 +29,9 @@ class BillModel {
     this.paidAmount,
     this.changeAmount,
     required this.status,
+    this.customerName,
+    this.phone,
+    this.tableNumber,
   });
 
   factory BillModel.fromJson(Map<String, dynamic> json) {
@@ -43,9 +50,52 @@ class BillModel {
         (e) => e.name.toUpperCase() == (json['status']?.toString().toUpperCase()),
         orElse: () => BillStatus.pending,
       ),
+      customerName: json['customer_name'] as String?,
+      phone: json['phone'] as String?,
+      tableNumber: json['table_number'] as String?,
     );
   }
 }
+
+/// Dữ liệu hiển thị phiếu thanh toán sau khi checkout thành công
+class CheckoutReceiptData {
+  final String billId;
+  final String? orderId;
+  final String? tableNumber;
+  final String? customerName;
+  final String? phone;
+  final String paymentMethod;
+  final double total;
+  final double paidAmount;
+  final double changeAmount;
+
+  CheckoutReceiptData({
+    required this.billId,
+    this.orderId,
+    this.tableNumber,
+    this.customerName,
+    this.phone,
+    required this.paymentMethod,
+    required this.total,
+    required this.paidAmount,
+    required this.changeAmount,
+  });
+
+  factory CheckoutReceiptData.fromJson(Map<String, dynamic> json) {
+    return CheckoutReceiptData(
+      billId: json['bill_id'] as String,
+      orderId: json['order_id'] as String?,
+      tableNumber: json['table_number'] as String?,
+      customerName: json['customer_name'] as String?,
+      phone: json['phone'] as String?,
+      paymentMethod: json['payment_method'] as String? ?? 'CASH',
+      total: (json['total'] ?? json['paid_amount'] ?? 0.0).toDouble(),
+      paidAmount: (json['paid_amount'] ?? 0.0).toDouble(),
+      changeAmount: (json['change_amount'] ?? 0.0).toDouble(),
+    );
+  }
+}
+
 
 class SplitBillPart {
   final int partIndex;

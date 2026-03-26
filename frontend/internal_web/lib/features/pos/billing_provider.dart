@@ -25,47 +25,65 @@ class BillingNotifier extends Notifier<void> {
     ref.read(billingErrorProvider.notifier).setError(null);
     ref.read(currentBillProvider.notifier).setBill(null);
     try {
-      // 1. Get active orders for this table
+      // 1. Lấy đơn hàng đang hoạt động của bàn này
       final orderRes = await apiClient.get('/orders?table_id=$tableId');
       final List<dynamic> orders = orderRes.data['data'] ?? [];
-      
+
       if (orders.isEmpty) {
         ref.read(billingErrorProvider.notifier).setError('Bàn này đang trống, không có đơn hàng.');
         return;
       }
-      
-      // Get the first active order
+
       final orderId = orders.first['id'];
 
-      // 2. Create or fetch the bill for the order
+      // 2. Tạo hoặc lấy bill (backend tự động chỉ tính READY/SERVED)
       final billRes = await apiClient.post('/billing/create', data: {
         'order_id': orderId
       });
-      
+
       final billData = billRes.data['data'] ?? billRes.data;
       ref.read(currentBillProvider.notifier).setBill(BillModel.fromJson(billData));
 
     } catch (e) {
-      ref.read(billingErrorProvider.notifier).setError(e.toString());
+      // Lấy message từ backend nếu có
+      String errMsg = e.toString();
+      try {
+        final dioErr = e as dynamic;
+        errMsg = dioErr.response?.data?['detail'] ?? errMsg;
+      } catch (_) {}
+      ref.read(billingErrorProvider.notifier).setError(errMsg);
     }
   }
 
-  Future<bool> checkout(String billId, String paymentMethod, {double? paidAmount}) async {
+  /// Thanh toán. Trả về [CheckoutReceiptData] nếu thành công, null nếu lỗi.
+  Future<CheckoutReceiptData?> checkout(String billId, String paymentMethod, {double? paidAmount, double? billTotal}) async {
     try {
       final Map<String, dynamic> payload = {
         'bill_id': billId,
-        'payment_method': paymentMethod, // Expected: CASH, VIETQR, CARD
+        'payment_method': paymentMethod,
       };
       if (paidAmount != null) {
         payload['paid_amount'] = paidAmount;
       }
-      
-      await apiClient.post('/billing/checkout', data: payload);
+
+      final res = await apiClient.post('/billing/checkout', data: payload);
       ref.read(currentBillProvider.notifier).setBill(null);
-      return true;
+      ref.read(billingErrorProvider.notifier).setError(null);
+
+      final resData = res.data['data'] ?? res.data;
+      // Thêm total vào receipt data nếu backend không trả về (fallback từ bill)
+      if (resData['total'] == null && billTotal != null) {
+        resData['total'] = billTotal;
+      }
+      return CheckoutReceiptData.fromJson(resData);
     } catch (e) {
-      ref.read(billingErrorProvider.notifier).setError(e.toString());
-      return false;
+      String errMsg = e.toString();
+      try {
+        final dioErr = e as dynamic;
+        errMsg = dioErr.response?.data?['detail'] ?? errMsg;
+      } catch (_) {}
+      ref.read(billingErrorProvider.notifier).setError(errMsg);
+      return null;
     }
   }
 
@@ -78,10 +96,16 @@ class BillingNotifier extends Notifier<void> {
       final data = res.data['data'] ?? res.data;
       return SplitBillResponse.fromJson(data);
     } catch (e) {
-      ref.read(billingErrorProvider.notifier).setError(e.toString());
+      String errMsg = e.toString();
+      try {
+        final dioErr = e as dynamic;
+        errMsg = dioErr.response?.data?['detail'] ?? errMsg;
+      } catch (_) {}
+      ref.read(billingErrorProvider.notifier).setError(errMsg);
       return null;
     }
   }
 }
 
 final billingProvider = NotifierProvider<BillingNotifier, void>(BillingNotifier.new);
+

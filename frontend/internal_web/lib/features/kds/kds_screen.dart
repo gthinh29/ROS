@@ -12,8 +12,13 @@ class KdsScreen extends ConsumerWidget {
   List<Map<String, dynamic>> _groupItems(List<OrderItemModel> items) {
     final Map<String, List<OrderItemModel>> pendingGroups = {};
     final List<Map<String, dynamic>> result = [];
-    
+
     for (var item in items) {
+      // Cancelled items hiển thị riêng lẻ, không gộp nhóm
+      if (item.status == OrderItemStatus.cancelled) {
+        result.add({'item': item, 'batchedQty': 1});
+        continue;
+      }
       if (item.status == OrderItemStatus.pending) {
         final key = '${item.menuItemId}_${item.variantName}_${item.note}';
         if (!pendingGroups.containsKey(key)) {
@@ -26,7 +31,7 @@ class KdsScreen extends ConsumerWidget {
     }
 
     pendingGroups.forEach((key, list) {
-      // Create a batched node using the oldest item as representative
+      // Gộp nhóm PENDING, dùng item cũ nhất làm đại diện
       list.sort((a, b) => a.createdAt.compareTo(b.createdAt));
       result.add({'item': list.first, 'batchedQty': list.length, 'group': list});
     });
@@ -38,6 +43,9 @@ class KdsScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final kdsAsync = ref.watch(kdsProvider);
 
+    // Kiểm tra có món HỦY không để hiện nút Dọn dẹp
+    final hasCancelled = kdsAsync.value?.any((e) => e.status == OrderItemStatus.cancelled) ?? false;
+
     return Scaffold(
       backgroundColor: const Color(0xFF121212),
       appBar: AppBar(
@@ -46,6 +54,24 @@ class KdsScreen extends ConsumerWidget {
         foregroundColor: Colors.white,
         elevation: 0,
         actions: [
+          if (hasCancelled)
+            Padding(
+              padding: const EdgeInsets.only(right: 8),
+              child: TextButton.icon(
+                onPressed: () {
+                  ref.read(kdsProvider.notifier).clearCancelledItems();
+                },
+                icon: const Icon(Icons.cleaning_services, color: Colors.redAccent),
+                label: const Text(
+                  'Dọn dẹp (Đã Hủy)',
+                  style: TextStyle(color: Colors.redAccent, fontWeight: FontWeight.bold),
+                ),
+                style: TextButton.styleFrom(
+                  side: const BorderSide(color: Colors.redAccent),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                ),
+              ),
+            ),
           IconButton(
             icon: const Icon(Icons.logout),
             onPressed: () {
@@ -57,8 +83,24 @@ class KdsScreen extends ConsumerWidget {
       ),
       body: kdsAsync.when(
         data: (items) {
+          if (items.isEmpty) {
+            return const Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.check_circle_outline, size: 80, color: Colors.green),
+                  SizedBox(height: 16),
+                  Text(
+                    'Không có món nào đang chờ!',
+                    style: TextStyle(color: Colors.white70, fontSize: 22),
+                  ),
+                ],
+              ),
+            );
+          }
+
           final grouped = _groupItems(items);
-          
+
           return GridView.builder(
             padding: const EdgeInsets.all(16),
             gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
@@ -96,3 +138,4 @@ class KdsScreen extends ConsumerWidget {
     );
   }
 }
+

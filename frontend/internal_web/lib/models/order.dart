@@ -1,5 +1,5 @@
 enum OrderStatus { pending, preparing, ready, completed, cancelled }
-enum OrderItemStatus { pending, preparing, ready, served }
+enum OrderItemStatus { pending, preparing, ready, served, cancelled }
 enum OrderType { dineIn, preOrder }
 
 class OrderItemModel {
