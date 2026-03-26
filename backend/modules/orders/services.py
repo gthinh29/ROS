@@ -258,6 +258,7 @@ async def create_order(db: Session, request: OrderCreate) -> Order:
             "qty": payload["qty"],
             "note": payload["note"],
             "table_id": str(request.table_id) if request.table_id else None,
+            "table_number": str(table.number) if table else None,
             "zone": payload["menu_item"].kds_zone,
         })
 

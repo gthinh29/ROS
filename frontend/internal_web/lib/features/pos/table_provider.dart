@@ -23,7 +23,10 @@ class TableNotifier extends Notifier<AsyncValue<List<TableModel>>> {
   Future<void> _fetchTables() async {
     try {
       final response = await apiClient.get('/tables');
-      final List<dynamic> data = response.data;
+      final dynamic responseData = response.data;
+      final List<dynamic> data = responseData is Map && responseData.containsKey('data') 
+          ? responseData['data'] 
+          : responseData;
       final tables = data.map((e) => TableModel.fromJson(e)).toList();
       state = AsyncValue.data(tables);
     } catch (e, st) {
@@ -66,6 +69,16 @@ class TableNotifier extends Notifier<AsyncValue<List<TableModel>>> {
       });
     } catch (e) {
       print('WS Connect Error: $e');
+    }
+  }
+
+  Future<bool> createTable(int number, String zone) async {
+    try {
+      await apiClient.post('/tables', data: {'number': number, 'zone': zone});
+      await _fetchTables();
+      return true;
+    } catch (e) {
+      return false;
     }
   }
 }

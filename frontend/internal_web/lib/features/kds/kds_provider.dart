@@ -41,6 +41,19 @@ class KdsNotifier extends Notifier<AsyncValue<List<OrderItemModel>>> {
             final newItems = (data['items'] as List).map((e) => OrderItemModel.fromJson(e)).toList();
             final currentList = state.value ?? [];
             state = AsyncValue.data([...newItems, ...currentList]);
+          } else if (data['event'] == 'item_status_updated') {
+            final itemId = data['item_id'];
+            final statusStr = data['status'];
+            final currentList = state.value ?? [];
+            if (statusStr == 'SERVED' || statusStr == 'CANCELLED') {
+              state = AsyncValue.data(currentList.where((e) => e.id != itemId).toList());
+            } else {
+              final status = OrderItemStatus.values.firstWhere(
+                (e) => e.name.toUpperCase() == statusStr.toString().toUpperCase(), 
+                orElse: () => OrderItemStatus.pending
+              );
+              state = AsyncValue.data(currentList.map((e) => e.id == itemId ? e.copyWith(status: status) : e).toList());
+            }
           }
         } catch (_) {}
       });
