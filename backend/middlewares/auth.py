@@ -15,35 +15,33 @@ _EXCLUDED_PREFIXES = ("/menu", "/ws", "/reservations", "/orders", "/docs", "/ope
 
 class JWTAuthenticationMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next):
-        if IS_PUBLIC:
-            return await call_next(request)
-
         path = request.url.path
         authorization = request.headers.get("Authorization")
-        
-        # If no token is provided, check if the route is allowed to be public
+        is_public_path = path in _EXCLUDED_EXACT or path.startswith(_EXCLUDED_PREFIXES)
+
+        # 1. Nếu không có token:
         if not authorization or not authorization.startswith("Bearer "):
-            if path in _EXCLUDED_EXACT or path.startswith(_EXCLUDED_PREFIXES):
+            if is_public_path:
                 return await call_next(request)
             return JSONResponse(status_code=401, content={"detail": "Token missing or invalid format"})
         
-        # If a token IS provided, always decode it and attach to request.state.user
+        # 2. Nếu CÓ token: Luôn thử giải mã
         token = authorization.replace("Bearer ", "")
         
         try:
-            # Decode and verify the JWT token
             payload = jwt.decode(token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM])
 
-            # Check if the token has expired
+            # Kiểm tra hết hạn
             if datetime.now(timezone.utc) > datetime.fromtimestamp(payload["exp"], tz=timezone.utc):
+                if is_public_path: return await call_next(request) # Bỏ qua cho public route
                 return JSONResponse(status_code=401, content={"detail": "Token has expired"})
 
-            # Save the payload information into the request state for role_access dependency
             request.state.user = payload
+            return await call_next(request)
 
-        except jwt.ExpiredSignatureError:
-            return JSONResponse(status_code=401, content={"detail": "Token has expired"})
-        except jwt.JWTError:
-            return JSONResponse(status_code=401, content={"detail": "Invalid token"})
-        
-        return await call_next(request)
+        except (jwt.ExpiredSignatureError, jwt.JWTError):
+            # Nếu route là public but token sai/hết hạn -> Vẫn cho qua (nhưng state.user rỗng)
+            if is_public_path:
+                return await call_next(request)
+            return JSONResponse(status_code=401, content={"detail": "Invalid or expired token"})
+
