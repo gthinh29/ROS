@@ -1,7 +1,10 @@
+from typing import List
+
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
+
 from core.database import get_db
-from .schemas import LoginResponse, LoginRequest, RefreshTokenResponse, RefreshTokenRequest
+from .schemas import LoginResponse, LoginRequest, RefreshTokenResponse, RefreshTokenRequest, UserCreate, UserUpdate, UserRead
 from . import services
 from core.denpendencies.role_access import require_role
 from core.enums import UserRole
@@ -33,9 +36,6 @@ async def refresh_token(request: RefreshTokenRequest, db: Session = Depends(get_
     result = await services.refresh_access_token(db, request)
     return ResponseWrapper.success_response(result)
 
-from pydantic import EmailStr
-from typing import List
-from .schemas import LoginResponse, LoginRequest, RefreshTokenResponse, RefreshTokenRequest, UserCreate, UserUpdate, UserRead
 
 @router.get("/users", response_model=ResponseWrapper[List[UserRead]], response_model_exclude_none=True)
 async def get_users_list(skip: int = 0, limit: int = 50, db: Session = Depends(get_db), current_user: dict = require_role([IS_ADMIN])):
