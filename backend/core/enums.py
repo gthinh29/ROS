@@ -42,6 +42,7 @@ class OrderItemStatus(str, enum.Enum):
     PREPARING = "PREPARING"
     READY = "READY"
     SERVED = "SERVED"
+    CANCELLED = "CANCELLED"
 
 
 class PaymentMethod(str, enum.Enum):

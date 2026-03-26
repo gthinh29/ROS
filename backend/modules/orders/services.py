@@ -27,6 +27,7 @@ _ALLOWED_TRANSITIONS: dict[OrderItemStatus, list[OrderItemStatus]] = {
     OrderItemStatus.PREPARING: [OrderItemStatus.READY, OrderItemStatus.SERVED],
     OrderItemStatus.READY: [OrderItemStatus.SERVED],
     OrderItemStatus.SERVED: [],
+    OrderItemStatus.CANCELLED: [],  # terminal state
 }
 
 
@@ -327,23 +328,69 @@ async def update_item_status(
     item.status = payload.status
     db.commit()
     db.refresh(item)
-    
-    # ── Phase 2: broadcast to Staff (fire-and-forget) ────────────
-    if payload.status == OrderItemStatus.READY:
-        try:
-            from core.ws_manager import kds_manager
-            import asyncio
-            menu_item = db.get(MenuItem, item.menu_item_id)
+
+    try:
+        from core.ws_manager import kds_manager
+        import asyncio
+        menu_item = db.get(MenuItem, item.menu_item_id)
+
+        # ── Broadcast trạng thái mới lên KDS realtime ────────────
+        asyncio.create_task(kds_manager.broadcast_to_zone(
+            menu_item.kds_zone if menu_item else "kitchen",
+            {
+                "event": "item_status_updated",
+                "item_id": str(item.id),
+                "status": payload.status.value,
+            }
+        ))
+
+        # ── Thông báo cho Waiter khi món READY ────────────────────
+        if payload.status == OrderItemStatus.READY:
+            from modules.tables.models import Table
+            table = db.get(Table, order.table_id) if order.table_id else None
             asyncio.create_task(kds_manager.broadcast_staff_event({
-                "type": "ITEM_READY",
+                "event": "ITEM_READY",
                 "table_id": str(order.table_id) if order.table_id else None,
+                "table_number": str(table.number) if table else None,
                 "menu_item_name": menu_item.name if menu_item else "Unknown",
-                "order_item_id": str(item.id)
+                "item_id": str(item.id),
+                "order_id": str(order.id),
             }))
-        except Exception:
-            pass
-            
+    except Exception as e:
+        import traceback
+        print("ERROR IN WS BROADCAST:", traceback.format_exc())
+
     return item
+
+
+async def cancel_pending_items_for_order(db: Session, order: Order) -> None:
+    """Hủy tất cả món chưa xong khi checkout. Broadcast KDS để bếp tự dọn."""
+    import asyncio
+    try:
+        from core.ws_manager import kds_manager
+    except Exception:
+        kds_manager = None
+
+    pending_statuses = {
+        OrderItemStatus.PENDING,
+        OrderItemStatus.PREPARING,
+        OrderItemStatus.READY,
+    }
+
+    for item in order.items:
+        if item.status in pending_statuses:
+            item.status = OrderItemStatus.CANCELLED
+            if kds_manager:
+                menu_item = db.get(MenuItem, item.menu_item_id)
+                zone = menu_item.kds_zone if menu_item else "kitchen"
+                asyncio.create_task(kds_manager.broadcast_to_zone(
+                    zone,
+                    {
+                        "event": "item_status_updated",
+                        "item_id": str(item.id),
+                        "status": OrderItemStatus.CANCELLED.value,
+                    }
+                ))
 
 
 async def get_active_kds_items(db: Session, zone: str) -> list[dict]:

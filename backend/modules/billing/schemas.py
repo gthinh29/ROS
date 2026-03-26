@@ -42,6 +42,10 @@ class BillRead(BaseModel):
     paid_amount: Optional[float]
     change_amount: Optional[float]
     status: BillStatus
+    # Thông tin khách hàng + bàn (dung để hiển thị phíeu)
+    customer_name: Optional[str] = None
+    phone: Optional[str] = None
+    table_number: Optional[str] = None
 
     model_config = {"from_attributes": True}
 
@@ -61,8 +65,13 @@ class SplitBillResponse(BaseModel):
 
 class CheckoutResponse(BaseModel):
     bill_id: uuid.UUID
+    order_id: uuid.UUID
     status: BillStatus
     payment_method: PaymentMethod
     paid_amount: float
     change_amount: float
     message: str
+    # Thông tin hiển thị phíeu
+    customer_name: Optional[str] = None
+    phone: Optional[str] = None
+    table_number: Optional[str] = None

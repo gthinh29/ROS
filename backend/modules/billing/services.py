@@ -14,7 +14,7 @@ from decimal import ROUND_HALF_UP, Decimal
 from fastapi import HTTPException, status
 from sqlalchemy.orm import Session
 
-from core.enums import BillStatus, OrderStatus, TableStatus
+from core.enums import BillStatus, OrderItemStatus, OrderStatus, TableStatus
 from modules.billing.models import Bill
 from modules.billing.schemas import (
     BillCreate,
@@ -55,7 +55,7 @@ def _get_restaurant_settings(db: Session, order: Order) -> tuple[Decimal, Decima
 # ── Services ──────────────────────────────────────────────────────────────────
 
 async def create_bill(db: Session, payload: BillCreate) -> Bill:
-    """Create a bill for an order, computing subtotal, VAT, and service fee."""
+    """Tạo bill cho một order. Chỉ tính tiền các món đã READY hoặc SERVED."""
     order: Order | None = db.get(Order, payload.order_id)
     if not order:
         raise HTTPException(status_code=404, detail="Order not found")
@@ -68,9 +68,17 @@ async def create_bill(db: Session, payload: BillCreate) -> Bill:
             detail="A bill already exists and is PAID for this order",
         )
 
-    # Subtotal = sum of (price × qty) for all order items
-    items: list[OrderItem] = order.items
-    subtotal = sum(Decimal(str(item.price)) * item.qty for item in items)
+    # Chỉ tính tiền các món đã READY hoặc SERVED (đã hoàn thành)
+    billable_statuses = {OrderItemStatus.READY, OrderItemStatus.SERVED}
+    billable_items: list[OrderItem] = [i for i in order.items if i.status in billable_statuses]
+
+    if not billable_items:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="Không có món ăn nào đã hoàn thành (READY/SERVED) để tính tiền.",
+        )
+
+    subtotal = sum(Decimal(str(item.price)) * item.qty for item in billable_items)
 
     vat_rate, svc_rate = _get_restaurant_settings(db, order)
     tax = (subtotal * vat_rate).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
@@ -130,7 +138,7 @@ async def split_bill_evenly(
 
 
 async def checkout(db: Session, payload: CheckoutRequest) -> CheckoutResponse:
-    """Record payment, mark bill PAID, close order and return table to EMPTY."""
+    """Ghi nhận thanh toán, mark bill PAID, hủy món chưa xong, đóng bàn."""
     bill: Bill | None = db.get(Bill, payload.bill_id)
     if not bill:
         raise HTTPException(status_code=404, detail="Bill not found")
@@ -160,9 +168,14 @@ async def checkout(db: Session, payload: CheckoutRequest) -> CheckoutResponse:
     bill.change_amount = float(change)
     bill.paid_at = datetime.now(timezone.utc)
 
-    # Close order
+    # Close order + tự động hủy món chưa xong
     order: Order | None = db.get(Order, bill.order_id)
+    table_number: str | None = None
     if order:
+        # Hủy tất cả món chưa xong (PENDING/PREPARING/READY) → dọn bếp
+        from modules.orders.services import cancel_pending_items_for_order
+        await cancel_pending_items_for_order(db, order)
+
         order.status = OrderStatus.COMPLETED
 
         # Return table to EMPTY
@@ -170,6 +183,7 @@ async def checkout(db: Session, payload: CheckoutRequest) -> CheckoutResponse:
             table: Table | None = db.get(Table, order.table_id)
             if table:
                 table.status = TableStatus.EMPTY
+                table_number = str(table.number)
 
     db.commit()
 
@@ -177,7 +191,7 @@ async def checkout(db: Session, payload: CheckoutRequest) -> CheckoutResponse:
     try:
         from core.ws_manager import kds_manager
         import asyncio
-        if payload.payment_method.value in ["CASH", "VIETQR", "CARD"] and order and order.table_id:
+        if order and order.table_id:
             asyncio.create_task(kds_manager.broadcast_pos_event({
                 "type": "TABLE_STATUS",
                 "table_id": str(order.table_id),
@@ -188,9 +202,13 @@ async def checkout(db: Session, payload: CheckoutRequest) -> CheckoutResponse:
 
     return CheckoutResponse(
         bill_id=bill.id,
+        order_id=order.id if order else bill.order_id,
         status=BillStatus.PAID,
         payment_method=payload.payment_method,
         paid_amount=float(paid_amount),
         change_amount=float(change),
-        message="Payment recorded. Table is now available.",
+        customer_name=order.customer_name if order else None,
+        phone=order.phone if order else None,
+        table_number=table_number,
+        message="Thanh toán thành công. Bàn đã sẵn sàng đón khách mới.",
     )
