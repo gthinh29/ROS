@@ -27,35 +27,47 @@ class TableTab extends ConsumerWidget {
         data: (tables) {
           if (tables.isEmpty)
             return const Center(child: Text('Chưa có bàn nào.'));
-          return SingleChildScrollView(
-            child: DataTable(
-              columns: const [
-                DataColumn(label: Text('Số Bàn')),
-                DataColumn(label: Text('Khu vực (Zone)')),
-                DataColumn(label: Text('Trạng thái hiện tại')),
-                DataColumn(label: Text('QR Order')),
-              ],
-              rows: tables.map((t) {
-                return DataRow(
-                  cells: [
-                    DataCell(Text('Bàn ${t.number}')),
-                    DataCell(Text(t.zone)),
-                    DataCell(Text(t.status.name.toUpperCase())),
-                    DataCell(
-                      TextButton.icon(
-                        icon: const Icon(Icons.qr_code, color: Colors.blue),
-                        label: const Text('Tải QR'),
-                        onPressed: () {
-                          final url =
-                              '${AppConstants.baseUrl}/tables/${t.id}/qr';
-                          html.window.open(url, '_blank');
-                        },
-                      ),
+          return LayoutBuilder(
+            builder: (context, constraints) {
+              return SingleChildScrollView(
+                scrollDirection: Axis.vertical,
+                child: SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: ConstrainedBox(
+                    constraints: BoxConstraints(minWidth: constraints.maxWidth),
+                    child: DataTable(
+                      headingRowColor: MaterialStateProperty.all(Colors.grey.shade50),
+                      columns: const [
+                        DataColumn(label: Text('Số Bàn')),
+                        DataColumn(label: Text('Khu vực (Zone)')),
+                        DataColumn(label: Text('Trạng thái hiện tại')),
+                        DataColumn(label: Text('QR Order')),
+                      ],
+                      rows: tables.map((t) {
+                        return DataRow(
+                          cells: [
+                            DataCell(Text('Bàn ${t.number}')),
+                            DataCell(Text(t.zone)),
+                            DataCell(Text(t.status.name.toUpperCase())),
+                            DataCell(
+                              TextButton.icon(
+                                icon: const Icon(Icons.qr_code, color: Colors.blue),
+                                label: const Text('Tải QR'),
+                                onPressed: () {
+                                  final url =
+                                      '${AppConstants.baseUrl}/tables/${t.id}/qr';
+                                  html.window.open(url, '_blank');
+                                },
+                              ),
+                            ),
+                          ],
+                        );
+                      }).toList(),
                     ),
-                  ],
-                );
-              }).toList(),
-            ),
+                  ),
+                ),
+              );
+            },
           );
         },
       ),

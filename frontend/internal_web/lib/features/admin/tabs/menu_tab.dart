@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/admin_menu_provider.dart';
 import '../../../models/menu.dart';
+import '../bom_manager.dart';
 
 class MenuTab extends ConsumerWidget {
   const MenuTab({super.key});
@@ -23,34 +24,52 @@ class MenuTab extends ConsumerWidget {
         error: (e, _) => Center(child: Text('Lỗi: \$e')),
         data: (items) {
           if (items.isEmpty) return const Center(child: Text('Chưa có món ăn nào.'));
-          return SingleChildScrollView(
-            scrollDirection: Axis.vertical,
-            child: SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              child: DataTable(
-                columns: const [
-                  DataColumn(label: Text('Tên món')),
-                  DataColumn(label: Text('Giá (VNĐ)')),
-                  DataColumn(label: Text('KDS Zone')),
-                  DataColumn(label: Text('Trạng thái')),
-                  DataColumn(label: Text('Hành động')),
-                ],
-                rows: items.map((item) {
-                  return DataRow(cells: [
-                    DataCell(Text(item.name)),
-                    DataCell(Text(item.basePrice.toStringAsFixed(0))),
-                    DataCell(Text(item.kdsZone)),
-                    DataCell(Text(item.isAvailable ? 'Còn hàng' : 'Hết hàng')),
-                    DataCell(Row(
-                      children: [
-                        IconButton(icon: const Icon(Icons.edit, color: Colors.blue), onPressed: () => _showFormDialog(context, ref, item: item, categories: categoryState.value)),
-                        IconButton(icon: const Icon(Icons.delete, color: Colors.red), onPressed: () => ref.read(adminMenuProvider.notifier).deleteItem(item.id)),
+          return LayoutBuilder(
+            builder: (context, constraints) {
+              return SingleChildScrollView(
+                scrollDirection: Axis.vertical,
+                child: SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: ConstrainedBox(
+                    constraints: BoxConstraints(minWidth: constraints.maxWidth),
+                    child: DataTable(
+                      headingRowColor: MaterialStateProperty.all(Colors.grey.shade50),
+                      columns: const [
+                        DataColumn(label: Text('Tên món')),
+                        DataColumn(label: Text('Giá (VNĐ)')),
+                        DataColumn(label: Text('KDS Zone')),
+                        DataColumn(label: Text('Trạng thái')),
+                        DataColumn(label: Text('Hành động')),
                       ],
-                    ))
-                  ]);
-                }).toList(),
-              ),
-            ),
+                      rows: items.map((item) {
+                        return DataRow(cells: [
+                          DataCell(Text(item.name)),
+                          DataCell(Text(item.basePrice.toStringAsFixed(0))),
+                          DataCell(Text(item.kdsZone)),
+                          DataCell(Text(item.isAvailable ? 'Còn hàng' : 'Hết hàng')),
+                          DataCell(Row(
+                            children: [
+                              IconButton(
+                                icon: const Icon(Icons.receipt_long, color: Colors.orange),
+                                tooltip: 'Định lượng (BOM)',
+                                onPressed: () {
+                                  showDialog(
+                                    context: context,
+                                    builder: (context) => BomManager(menuItem: item),
+                                  );
+                                },
+                              ),
+                              IconButton(icon: const Icon(Icons.edit, color: Colors.blue), tooltip: 'Sửa món', onPressed: () => _showFormDialog(context, ref, item: item, categories: categoryState.value)),
+                              IconButton(icon: const Icon(Icons.delete, color: Colors.red), tooltip: 'Xoá món', onPressed: () => ref.read(adminMenuProvider.notifier).deleteItem(item.id)),
+                            ],
+                          ))
+                        ]);
+                      }).toList(),
+                    ),
+                  ),
+                ),
+              );
+            },
           );
         }
       ),
