@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../core/api_client.dart';
-import '../models/category.dart';
-import '../models/menu_item.dart';
+import 'package:shared/core/api_client.dart';
+import 'package:shared/models/category.dart';
+import 'package:shared/models/menu.dart';
 import 'product_detail_screen.dart';
 
 final cartProvider = StateProvider<Map<String, dynamic>>((ref) => {});
@@ -142,9 +142,9 @@ class MenuItemCard extends StatelessWidget {
     return Card(
       margin: EdgeInsets.all(10),
       child: ListTile(
-        leading: Image.network(item.imageUrl),
+        leading: item.imageUrl != null ? Image.network(item.imageUrl!) : const Icon(Icons.fastfood),
         title: Text(item.name),
-        subtitle: Text('Price: \$${item.price}'),
+        subtitle: Text('Price: \$${item.basePrice}'),
         trailing: item.isAvailable
             ? null
             : Icon(Icons.block, color: Colors.red),

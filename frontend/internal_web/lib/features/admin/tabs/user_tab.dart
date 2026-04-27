@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/admin_user_provider.dart';
-import '../../../models/user.dart';
+import 'package:shared/models/user.dart';
 
 class UserTab extends ConsumerWidget {
   const UserTab({super.key});

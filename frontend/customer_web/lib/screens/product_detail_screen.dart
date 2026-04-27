@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../core/api_client.dart';
-import '../models/menu_item.dart';
+import 'package:shared/core/api_client.dart';
+import 'package:shared/models/menu.dart';
 
 // Riverpod provider để quản lý giỏ hàng
 final cartProvider = StateProvider<Map<String, dynamic>>((ref) => {});
@@ -23,7 +23,7 @@ class ProductDetailScreen extends ConsumerStatefulWidget {
 class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
   late Future<MenuItem> menuItem;
   late String selectedSize;
-  late List<String> selectedModifiers;
+  late List<String> selectedModifiers; // stores modifier IDs
   late int quantity;
   late String note;
 
@@ -53,7 +53,7 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
       {
         'itemId': item.id,
         'name': item.name,
-        'price': item.price,
+        'price': item.basePrice,
         'size': selectedSize,
         'modifiers': selectedModifiers,
         'quantity': quantity,
@@ -86,7 +86,7 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 // Hiển thị ảnh lớn
-                Image.network(item.imageUrl, height: 250, fit: BoxFit.cover),
+                Image.network(item.imageUrl ?? '', height: 250, fit: BoxFit.cover),
                 SizedBox(height: 16),
                 // Tên món ăn
                 Text(
@@ -125,14 +125,14 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
                 Wrap(
                   children: item.modifiers.map((modifier) {
                     return FilterChip(
-                      label: Text(modifier),
-                      selected: selectedModifiers.contains(modifier),
+                      label: Text(modifier.name),
+                      selected: selectedModifiers.contains(modifier.id),
                       onSelected: (isSelected) {
                         setState(() {
                           if (isSelected) {
-                            selectedModifiers.add(modifier);
+                            selectedModifiers.add(modifier.id);
                           } else {
-                            selectedModifiers.remove(modifier);
+                            selectedModifiers.remove(modifier.id);
                           }
                         });
                       },
@@ -182,7 +182,7 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
                         ),
                       ],
                     ),
-                    Text('Price: \$${item.price * quantity}'),
+                    Text('Price: \$${item.basePrice * quantity}'),
                   ],
                 ),
                 SizedBox(height: 16),

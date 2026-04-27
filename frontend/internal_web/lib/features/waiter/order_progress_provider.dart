@@ -1,6 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../core/api_client.dart';
-import '../../models/order.dart';
+import 'package:shared/core/api_client.dart';
+import 'package:shared/models/order.dart';
 
 /// Fetch tất cả các order item của 1 table, gom lại thành flat list.
 /// Dùng trong Tab "Tiến trình đơn" của CreateOrderFlow.

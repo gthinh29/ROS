@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/admin_inventory_provider.dart';
-import '../../../models/inventory.dart';
+import 'package:shared/models/inventory.dart';
 
 class InventoryTab extends ConsumerWidget {
   const InventoryTab({super.key});

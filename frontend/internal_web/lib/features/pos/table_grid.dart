@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'table_provider.dart';
-import '../../models/table.dart';
+import 'package:shared/models/table.dart';
 import '../../widgets/table_tile.dart';
 
 class TableGrid extends ConsumerWidget {

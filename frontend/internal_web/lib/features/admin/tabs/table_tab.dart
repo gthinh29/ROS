@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'dart:html' as html;
 import '../../pos/table_provider.dart';
-import '../../../core/constants.dart';
+import 'package:shared/core/constants.dart';
 
 class TableTab extends ConsumerWidget {
   const TableTab({super.key});
@@ -37,7 +37,9 @@ class TableTab extends ConsumerWidget {
                   child: ConstrainedBox(
                     constraints: BoxConstraints(minWidth: constraints.maxWidth),
                     child: DataTable(
-                      headingRowColor: MaterialStateProperty.all(Colors.grey.shade50),
+                      headingRowColor: WidgetStateProperty.all(
+                        Colors.grey.shade50,
+                      ),
                       columns: const [
                         DataColumn(label: Text('Số Bàn')),
                         DataColumn(label: Text('Khu vực (Zone)')),
@@ -52,7 +54,10 @@ class TableTab extends ConsumerWidget {
                             DataCell(Text(t.status.name.toUpperCase())),
                             DataCell(
                               TextButton.icon(
-                                icon: const Icon(Icons.qr_code, color: Colors.blue),
+                                icon: const Icon(
+                                  Icons.qr_code,
+                                  color: Colors.blue,
+                                ),
                                 label: const Text('Tải QR'),
                                 onPressed: () {
                                   final url =

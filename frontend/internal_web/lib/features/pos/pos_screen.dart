@@ -5,7 +5,7 @@ import '../auth/auth_notifier.dart';
 import 'table_grid.dart';
 import 'bill_detail.dart';
 import 'billing_provider.dart';
-import '../../models/table.dart';
+import 'package:shared/models/table.dart';
 
 class PosScreen extends ConsumerWidget {
   const PosScreen({super.key});

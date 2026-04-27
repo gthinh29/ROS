@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/admin_menu_provider.dart';
-import '../../../models/menu.dart';
+import 'package:shared/models/menu.dart';
 import '../bom_manager.dart';
 
 class MenuTab extends ConsumerWidget {

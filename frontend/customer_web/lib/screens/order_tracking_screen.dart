@@ -5,7 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 import 'package:http/http.dart' as http;
-import '../models/order_item.dart';
+import 'package:shared/models/order_item.dart';
 
 class OrderTrackingScreen extends ConsumerStatefulWidget {
   final String tableId;

@@ -1,9 +1,9 @@
 import 'dart:convert';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
-import '../../models/order.dart';
-import '../../core/api_client.dart';
-import '../../core/constants.dart';
+import 'package:shared/models/order.dart';
+import 'package:shared/core/api_client.dart';
+import 'package:shared/core/constants.dart';
 import 'kds_audio_service.dart';
 
 class KdsNotifier extends Notifier<AsyncValue<List<OrderItemModel>>> {

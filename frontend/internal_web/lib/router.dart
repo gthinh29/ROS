@@ -3,7 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'features/auth/auth_notifier.dart';
 import 'features/auth/login_screen.dart';
 import 'features/home/landing_screen.dart';
-import 'models/user.dart';
+import 'package:shared/models/user.dart';
 
 import 'features/pos/pos_screen.dart';
 import 'features/kds/kds_screen.dart';

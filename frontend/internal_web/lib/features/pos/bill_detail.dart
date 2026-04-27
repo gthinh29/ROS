@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'billing_provider.dart';
-import '../../models/billing.dart';
+import 'package:shared/models/billing.dart';
 
 class BillDetailPane extends ConsumerWidget {
   const BillDetailPane({super.key});
@@ -39,7 +39,8 @@ class BillDetailPane extends ConsumerWidget {
                 child: ListView(
                   children: [
                     // Thông tin khách hàng (nếu có)
-                    if (currentBill.tableNumber != null || currentBill.customerName != null) ...[
+                    if (currentBill.tableNumber != null ||
+                        currentBill.customerName != null) ...[
                       Container(
                         padding: const EdgeInsets.all(12),
                         decoration: BoxDecoration(
@@ -50,29 +51,60 @@ class BillDetailPane extends ConsumerWidget {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             if (currentBill.tableNumber != null)
-                              Row(children: [
-                                const Icon(Icons.table_restaurant, size: 16, color: Colors.blue),
-                                const SizedBox(width: 8),
-                                Text('Bàn số: ${currentBill.tableNumber}',
-                                    style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.blue)),
-                              ]),
+                              Row(
+                                children: [
+                                  const Icon(
+                                    Icons.table_restaurant,
+                                    size: 16,
+                                    color: Colors.blue,
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Text(
+                                    'Bàn số: ${currentBill.tableNumber}',
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.blue,
+                                    ),
+                                  ),
+                                ],
+                              ),
                             if (currentBill.customerName != null) ...[
                               const SizedBox(height: 4),
-                              Row(children: [
-                                const Icon(Icons.person, size: 16, color: Colors.blueGrey),
-                                const SizedBox(width: 8),
-                                Text('Khách: ${currentBill.customerName}',
-                                    style: const TextStyle(color: Colors.blueGrey)),
-                              ]),
+                              Row(
+                                children: [
+                                  const Icon(
+                                    Icons.person,
+                                    size: 16,
+                                    color: Colors.blueGrey,
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Text(
+                                    'Khách: ${currentBill.customerName}',
+                                    style: const TextStyle(
+                                      color: Colors.blueGrey,
+                                    ),
+                                  ),
+                                ],
+                              ),
                             ],
                             if (currentBill.phone != null) ...[
                               const SizedBox(height: 4),
-                              Row(children: [
-                                const Icon(Icons.phone, size: 16, color: Colors.blueGrey),
-                                const SizedBox(width: 8),
-                                Text('SĐT: ${currentBill.phone}',
-                                    style: const TextStyle(color: Colors.blueGrey)),
-                              ]),
+                              Row(
+                                children: [
+                                  const Icon(
+                                    Icons.phone,
+                                    size: 16,
+                                    color: Colors.blueGrey,
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Text(
+                                    'SĐT: ${currentBill.phone}',
+                                    style: const TextStyle(
+                                      color: Colors.blueGrey,
+                                    ),
+                                  ),
+                                ],
+                              ),
                             ],
                           ],
                         ),
@@ -84,7 +116,10 @@ class BillDetailPane extends ConsumerWidget {
                       style: const TextStyle(fontSize: 12, color: Colors.grey),
                     ),
                     const SizedBox(height: 16),
-                    _buildRow('Tạm tính (đã hoàn thành):', currentBill.subtotal),
+                    _buildRow(
+                      'Tạm tính (đã hoàn thành):',
+                      currentBill.subtotal,
+                    ),
                     _buildRow('VAT (8%):', currentBill.tax),
                     _buildRow('Phí phục vụ:', currentBill.serviceFee),
                     if (currentBill.discount > 0)
@@ -249,12 +284,22 @@ class _SplitBillDialogState extends ConsumerState<SplitBillDialog> {
     if (splitData != null && paidParts.length == splitData!.parts.length) {
       final receipt = await ref
           .read(billingProvider.notifier)
-          .checkout(widget.bill.id, 'CASH', paidAmount: widget.bill.total, billTotal: widget.bill.total);
+          .checkout(
+            widget.bill.id,
+            'CASH',
+            paidAmount: widget.bill.total,
+            billTotal: widget.bill.total,
+          );
       if (receipt != null && mounted) {
         Navigator.pop(context);
         showDialog(
           context: context,
-          builder: (ctx) => PaymentReceiptDialog(receipt: receipt, subtotal: widget.bill.subtotal, tax: widget.bill.tax, serviceFee: widget.bill.serviceFee),
+          builder: (ctx) => PaymentReceiptDialog(
+            receipt: receipt,
+            subtotal: widget.bill.subtotal,
+            tax: widget.bill.tax,
+            serviceFee: widget.bill.serviceFee,
+          ),
         );
       } else if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -403,7 +448,7 @@ class _PaymentDialogState extends ConsumerState<PaymentDialog> {
           ),
           const SizedBox(height: 16),
           DropdownButtonFormField<String>(
-            value: _method,
+            initialValue: _method,
             items: const [
               DropdownMenuItem(value: 'CASH', child: Text('Tiền mặt (CASH)')),
               DropdownMenuItem(
@@ -430,7 +475,8 @@ class _PaymentDialogState extends ConsumerState<PaymentDialog> {
                 labelText: 'Khách đưa (₫)',
                 border: OutlineInputBorder(),
               ),
-              onChanged: (val) => setState(() => _paidAmount = double.tryParse(val)),
+              onChanged: (val) =>
+                  setState(() => _paidAmount = double.tryParse(val)),
             ),
             const SizedBox(height: 8),
             // Hiển thị tiền thừa hoặc cảnh báo thiếu
@@ -523,13 +569,21 @@ class PaymentReceiptDialog extends StatelessWidget {
     this.serviceFee,
   });
 
-  Widget _receiptRow(String label, String value, {bool bold = false, Color? color}) {
+  Widget _receiptRow(
+    String label,
+    String value, {
+    bool bold = false,
+    Color? color,
+  }) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 3),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(label, style: TextStyle(fontSize: 14, color: Colors.grey.shade700)),
+          Text(
+            label,
+            style: TextStyle(fontSize: 14, color: Colors.grey.shade700),
+          ),
           Text(
             value,
             style: TextStyle(
@@ -545,11 +599,13 @@ class PaymentReceiptDialog extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final payMethodLabel = {
-      'CASH': '💵 Tiền mặt',
-      'VIETQR': '📲 Chuyển khoản',
-      'CARD': '💳 Quẹt thẻ',
-    }[receipt.paymentMethod] ?? receipt.paymentMethod;
+    final payMethodLabel =
+        {
+          'CASH': '💵 Tiền mặt',
+          'VIETQR': '📲 Chuyển khoản',
+          'CARD': '💳 Quẹt thẻ',
+        }[receipt.paymentMethod] ??
+        receipt.paymentMethod;
 
     return Dialog(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
@@ -603,7 +659,10 @@ class PaymentReceiptDialog extends StatelessWidget {
             if (tax != null)
               _receiptRow('VAT:', '${tax!.toStringAsFixed(0)} ₫'),
             if (serviceFee != null)
-              _receiptRow('Phí dịch vụ:', '${serviceFee!.toStringAsFixed(0)} ₫'),
+              _receiptRow(
+                'Phí dịch vụ:',
+                '${serviceFee!.toStringAsFixed(0)} ₫',
+              ),
             const Divider(),
             _receiptRow(
               'TỔNG CỘNG:',
@@ -613,7 +672,10 @@ class PaymentReceiptDialog extends StatelessWidget {
             ),
             const Divider(),
             _receiptRow('Phương thức:', payMethodLabel),
-            _receiptRow('Khách đưa:', '${receipt.paidAmount.toStringAsFixed(0)} ₫'),
+            _receiptRow(
+              'Khách đưa:',
+              '${receipt.paidAmount.toStringAsFixed(0)} ₫',
+            ),
             _receiptRow(
               'Tiền thừa:',
               '${receipt.changeAmount.toStringAsFixed(0)} ₫',
@@ -637,7 +699,10 @@ class PaymentReceiptDialog extends StatelessWidget {
                   SizedBox(width: 8),
                   Text(
                     'Thanh toán thành công!',
-                    style: TextStyle(color: Colors.green, fontWeight: FontWeight.bold),
+                    style: TextStyle(
+                      color: Colors.green,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ],
               ),
@@ -654,7 +719,11 @@ class PaymentReceiptDialog extends StatelessWidget {
                     onPressed: () {
                       // TODO: Tích hợp in hóa đơn
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Tính năng in hóa đơn sẽ được tích hợp sau.')),
+                        const SnackBar(
+                          content: Text(
+                            'Tính năng in hóa đơn sẽ được tích hợp sau.',
+                          ),
+                        ),
                       );
                     },
                   ),
@@ -662,9 +731,14 @@ class PaymentReceiptDialog extends StatelessWidget {
                 const SizedBox(width: 8),
                 Expanded(
                   child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.green,
+                    ),
                     onPressed: () => Navigator.pop(context),
-                    child: const Text('Đóng', style: TextStyle(color: Colors.white)),
+                    child: const Text(
+                      'Đóng',
+                      style: TextStyle(color: Colors.white),
+                    ),
                   ),
                 ),
               ],

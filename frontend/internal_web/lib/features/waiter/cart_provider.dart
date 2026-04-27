@@ -1,6 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../models/cart_item.dart';
-import '../../core/api_client.dart';
+import 'package:shared/models/cart_item.dart';
+import 'package:shared/core/api_client.dart';
 
 class SelectedTableNotifier extends Notifier<String?> {
   @override

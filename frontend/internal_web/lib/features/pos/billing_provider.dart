@@ -1,6 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../models/billing.dart';
-import '../../core/api_client.dart';
+import 'package:shared/models/billing.dart';
+import 'package:shared/core/api_client.dart';
 
 class CurrentBillNotifier extends Notifier<BillModel?> {
   @override

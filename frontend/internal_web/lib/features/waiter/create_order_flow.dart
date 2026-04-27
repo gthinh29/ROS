@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../models/menu.dart';
-import '../../models/order.dart';
-import '../../models/cart_item.dart';
+import 'package:shared/models/menu.dart';
+import 'package:shared/models/order.dart';
+import 'package:shared/models/cart_item.dart';
 import 'menu_provider.dart';
 import 'cart_provider.dart';
 import 'order_progress_provider.dart';

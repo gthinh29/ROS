@@ -51,6 +51,7 @@ class MenuItem {
   final String kdsZone;
   final List<Variant> variants;
   final List<Modifier> modifiers;
+  final String description;
 
   MenuItem({
     required this.id,
@@ -62,17 +63,22 @@ class MenuItem {
     this.kdsZone = 'kitchen',
     this.variants = const [],
     this.modifiers = const [],
+    this.description = '',
   });
+
+  /// Convenience alias – customer_web dùng `price` thay vì `basePrice`
+  double get price => basePrice;
 
   factory MenuItem.fromJson(Map<String, dynamic> json) {
     return MenuItem(
       id: json['id'] as String,
-      categoryId: json['category_id'] as String,
+      categoryId: json['category_id'] as String? ?? '',
       name: json['name'] as String,
-      basePrice: (json['base_price'] ?? 0.0).toDouble(),
+      basePrice: (json['base_price'] ?? json['price'] ?? 0.0).toDouble(),
       imageUrl: json['image_url'] as String?,
       isAvailable: json['is_available'] ?? true,
       kdsZone: json['kds_zone'] ?? 'kitchen',
+      description: json['description'] as String? ?? '',
       variants: (json['variants'] as List<dynamic>?)
               ?.map((e) => Variant.fromJson(e))
               .toList() ??

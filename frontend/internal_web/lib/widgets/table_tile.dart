@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../models/table.dart';
+import 'package:shared/models/table.dart';
 
 class TableTile extends StatelessWidget {
   final TableModel table;

@@ -1,6 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../models/user.dart';
-import '../../../core/api_client.dart';
+import 'package:shared/models/user.dart';
+import 'package:shared/core/api_client.dart';
 
 class AdminUserNotifier extends Notifier<AsyncValue<List<User>>> {
   @override

@@ -1,9 +1,9 @@
 import 'dart:convert';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
-import '../../models/table.dart';
-import '../../core/api_client.dart';
-import '../../core/constants.dart';
+import 'package:shared/models/table.dart';
+import 'package:shared/core/api_client.dart';
+import 'package:shared/core/constants.dart';
 
 class TableNotifier extends Notifier<AsyncValue<List<TableModel>>> {
   WebSocketChannel? _channel;

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'providers/admin_bom_provider.dart';
 import 'providers/admin_inventory_provider.dart';
-import '../../../models/menu.dart';
+import 'package:shared/models/menu.dart';
 
 class BomManager extends ConsumerStatefulWidget {
   final MenuItem menuItem;

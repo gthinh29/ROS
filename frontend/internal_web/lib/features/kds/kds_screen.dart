@@ -4,7 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'kds_provider.dart';
 import 'order_card.dart';
 import '../auth/auth_notifier.dart';
-import '../../models/order.dart';
+import 'package:shared/models/order.dart';
 import 'kds_audio_service.dart';
 
 class KdsScreen extends ConsumerWidget {

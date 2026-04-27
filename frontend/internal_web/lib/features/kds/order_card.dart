@@ -1,6 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import '../../models/order.dart';
+import 'package:shared/models/order.dart';
 
 class OrderCard extends StatefulWidget {
   final OrderItemModel item;

@@ -1,6 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../models/menu.dart';
-import '../../core/api_client.dart';
+import 'package:shared/models/menu.dart';
+import 'package:shared/core/api_client.dart';
 
 class MenuNotifier extends Notifier<AsyncValue<List<MenuItem>>> {
   @override

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import '../core/api_client.dart';
+import 'package:shared/core/api_client.dart';
 import 'menu_screen.dart'; // import cartProvider
 
 class CartScreen extends ConsumerStatefulWidget {

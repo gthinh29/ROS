@@ -1,7 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import '../../core/api_client.dart';
-import '../../models/user.dart';
+import 'package:shared/core/api_client.dart';
+import 'package:shared/models/user.dart';
 
 class AuthState {
   final User? user;

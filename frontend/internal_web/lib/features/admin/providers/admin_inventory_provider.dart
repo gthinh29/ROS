@@ -1,6 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../models/inventory.dart';
-import '../../../core/api_client.dart';
+import 'package:shared/models/inventory.dart';
+import 'package:shared/core/api_client.dart';
 
 class InventoryNotifier extends Notifier<AsyncValue<List<Ingredient>>> {
   @override

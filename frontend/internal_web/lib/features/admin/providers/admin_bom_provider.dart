@@ -1,7 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:dio/dio.dart';
-import '../../../core/api_client.dart';
-import '../../../../models/bom.dart';
+import 'package:shared/core/api_client.dart';
+import 'package:shared/models/bom.dart';
 
 final adminBomProvider = Provider<AdminBomService>((ref) {
   return AdminBomService(apiClient);
