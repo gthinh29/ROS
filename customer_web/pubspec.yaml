@@ -1,0 +1,37 @@
+name: customer_web
+description: "A new Flutter project."
+publish_to: 'none'
+
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.12.0-210.2.beta
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # Routing
+  go_router: ^5.0.0
+
+  # State management
+  riverpod: ^2.5.1
+  flutter_riverpod: ^2.5.1
+
+  # HTTP requests
+  dio: ^5.7.0
+
+  # WebSocket
+  web_socket_channel: ^2.4.0
+
+  # HTTP fallback polling
+  http: ^1.2.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+
+  flutter_lints: ^6.0.0
+
+flutter:
+  uses-material-design: true
