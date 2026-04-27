@@ -25,8 +25,9 @@ class TableTab extends ConsumerWidget {
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (e, _) => Center(child: Text('Lỗi: \$e')),
         data: (tables) {
-          if (tables.isEmpty)
+          if (tables.isEmpty) {
             return const Center(child: Text('Chưa có bàn nào.'));
+          }
           return LayoutBuilder(
             builder: (context, constraints) {
               return SingleChildScrollView(

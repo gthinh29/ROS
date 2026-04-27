@@ -85,7 +85,7 @@ class ReadyItemsPanel extends ConsumerWidget {
             child: ListView.separated(
               padding: const EdgeInsets.all(0),
               itemCount: items.length,
-              separatorBuilder: (_, __) => Divider(height: 1, color: Colors.grey.shade200),
+              separatorBuilder: (_, _) => Divider(height: 1, color: Colors.grey.shade200),
               itemBuilder: (ctx, index) {
                 final item = items[index];
                 return _ReadyItemCard(item: item);

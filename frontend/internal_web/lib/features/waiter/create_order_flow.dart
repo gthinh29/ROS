@@ -291,7 +291,7 @@ class _OrderTab extends ConsumerWidget {
                         child: Text('Chưa có món nào', style: TextStyle(color: Colors.grey)))
                     : ListView.separated(
                         itemCount: cart.length,
-                        separatorBuilder: (_, __) =>
+                        separatorBuilder: (_, _) =>
                             Divider(height: 1, color: Colors.grey.shade200),
                         itemBuilder: (context, index) {
                           final cItem = cart[index];
@@ -327,7 +327,7 @@ class _OrderTab extends ConsumerWidget {
                       children: [
                         const Text('Tổng:',
                             style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                        Consumer(builder: (_, ref, __) {
+                        Consumer(builder: (_, ref, _) {
                           return Text(
                             '${ref.read(cartProvider.notifier).totalAmount.toStringAsFixed(0)} ₫',
                             style: const TextStyle(
@@ -422,7 +422,7 @@ class _ProgressTab extends ConsumerWidget {
           return ListView.separated(
             padding: const EdgeInsets.all(16),
             itemCount: items.length,
-            separatorBuilder: (_, __) =>
+            separatorBuilder: (_, _) =>
                 Divider(height: 1, color: Colors.grey.shade200),
             itemBuilder: (ctx, index) {
               return _ProgressItemTile(item: items[index]);
