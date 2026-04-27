@@ -229,11 +229,12 @@ class _SplitBillDialogState extends ConsumerState<SplitBillDialog> {
     final res = await ref
         .read(billingProvider.notifier)
         .splitBill(widget.bill.id, splitCount);
-    if (mounted)
+    if (mounted) {
       setState(() {
         splitData = res;
         isLoading = false;
       });
+    }
   }
 
   @override
