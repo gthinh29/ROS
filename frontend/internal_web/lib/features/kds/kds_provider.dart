@@ -4,6 +4,7 @@ import 'package:web_socket_channel/web_socket_channel.dart';
 import '../../models/order.dart';
 import '../../core/api_client.dart';
 import '../../core/constants.dart';
+import 'kds_audio_service.dart';
 
 class KdsNotifier extends Notifier<AsyncValue<List<OrderItemModel>>> {
   WebSocketChannel? _channel;
@@ -38,6 +39,8 @@ class KdsNotifier extends Notifier<AsyncValue<List<OrderItemModel>>> {
         try {
           final data = jsonDecode(message);
           if (data['event'] == 'new_order_items' && data['items'] != null) {
+            ref.read(kdsAudioProvider.notifier).playNewOrderSound();
+            
             final newItems = (data['items'] as List).map((e) => OrderItemModel.fromJson(e)).toList();
             final currentList = state.value ?? [];
             state = AsyncValue.data([...newItems, ...currentList]);

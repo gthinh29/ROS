@@ -20,36 +20,44 @@ class UserTab extends ConsumerWidget {
         error: (e, _) => Center(child: Text('Lỗi: \$e')),
         data: (users) {
           if (users.isEmpty) return const Center(child: Text('Chưa có nhân sự nào.'));
-          return SingleChildScrollView(
-            scrollDirection: Axis.vertical,
-            child: SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              child: DataTable(
-                columns: const [
-                  DataColumn(label: Text('Tên')),
-                  DataColumn(label: Text('Email')),
-                  DataColumn(label: Text('Role')),
-                  DataColumn(label: Text('SĐT')),
-                  DataColumn(label: Text('Trạng thái')),
-                  DataColumn(label: Text('Hành động')),
-                ],
-                rows: users.map((u) {
-                  return DataRow(cells: [
-                    DataCell(Text(u.name)),
-                    DataCell(Text(u.email)),
-                    DataCell(Text(u.role.name.toUpperCase())),
-                    DataCell(Text(u.phone ?? '')),
-                    DataCell(Text(u.isActive ? 'Đang làm' : 'Đã nghỉ')),
-                    DataCell(Row(
-                      children: [
-                        IconButton(icon: const Icon(Icons.edit, color: Colors.blue), onPressed: () => _showFormDialog(context, ref, user: u)),
-                        IconButton(icon: const Icon(Icons.delete, color: Colors.red), onPressed: () => ref.read(adminUserProvider.notifier).deleteUser(u.id)),
+          return LayoutBuilder(
+            builder: (context, constraints) {
+              return SingleChildScrollView(
+                scrollDirection: Axis.vertical,
+                child: SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: ConstrainedBox(
+                    constraints: BoxConstraints(minWidth: constraints.maxWidth),
+                    child: DataTable(
+                      headingRowColor: MaterialStateProperty.all(Colors.grey.shade50),
+                      columns: const [
+                        DataColumn(label: Text('Tên')),
+                        DataColumn(label: Text('Email')),
+                        DataColumn(label: Text('Role')),
+                        DataColumn(label: Text('SĐT')),
+                        DataColumn(label: Text('Trạng thái')),
+                        DataColumn(label: Text('Hành động')),
                       ],
-                    ))
-                  ]);
-                }).toList(),
-              ),
-            ),
+                      rows: users.map((u) {
+                        return DataRow(cells: [
+                          DataCell(Text(u.name)),
+                          DataCell(Text(u.email)),
+                          DataCell(Text(u.role.name.toUpperCase())),
+                          DataCell(Text(u.phone ?? '')),
+                          DataCell(Text(u.isActive ? 'Đang làm' : 'Đã nghỉ')),
+                          DataCell(Row(
+                            children: [
+                              IconButton(icon: const Icon(Icons.edit, color: Colors.blue), onPressed: () => _showFormDialog(context, ref, user: u)),
+                              IconButton(icon: const Icon(Icons.delete, color: Colors.red), onPressed: () => ref.read(adminUserProvider.notifier).deleteUser(u.id)),
+                            ],
+                          ))
+                        ]);
+                      }).toList(),
+                    ),
+                  ),
+                ),
+              );
+            },
           );
         }
       ),

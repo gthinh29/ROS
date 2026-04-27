@@ -5,6 +5,7 @@ import 'kds_provider.dart';
 import 'order_card.dart';
 import '../auth/auth_notifier.dart';
 import '../../models/order.dart';
+import 'kds_audio_service.dart';
 
 class KdsScreen extends ConsumerWidget {
   const KdsScreen({super.key});
@@ -42,6 +43,7 @@ class KdsScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final kdsAsync = ref.watch(kdsProvider);
+    final isMuted = ref.watch(kdsAudioProvider);
 
     // Kiểm tra có món HỦY không để hiện nút Dọn dẹp
     final hasCancelled = kdsAsync.value?.any((e) => e.status == OrderItemStatus.cancelled) ?? false;
@@ -54,6 +56,11 @@ class KdsScreen extends ConsumerWidget {
         foregroundColor: Colors.white,
         elevation: 0,
         actions: [
+          IconButton(
+            icon: Icon(isMuted ? Icons.volume_off : Icons.volume_up, color: isMuted ? Colors.redAccent : Colors.greenAccent),
+            tooltip: isMuted ? 'Bật âm báo đơn mới' : 'Tắt âm báo',
+            onPressed: () => ref.read(kdsAudioProvider.notifier).toggleMute(),
+          ),
           if (hasCancelled)
             Padding(
               padding: const EdgeInsets.only(right: 8),
