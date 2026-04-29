@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared/models/order_item.dart';
+import 'package:shared/core/api_client.dart';
 
 class OrderTrackingScreen extends ConsumerStatefulWidget {
   final String tableId;
@@ -133,15 +134,12 @@ class _OrderTrackingScreenState extends ConsumerState<OrderTrackingScreen> {
 
   Future<void> _fetchOrderHttp() async {
     try {
-      final response = await http.get(
-        Uri.parse('http://localhost:8000/orders/${widget.orderId}'),
-      );
+      final response = await ApiClient().dio.get('/orders/${widget.orderId}');
       if (response.statusCode == 200 && mounted) {
-        final data = jsonDecode(response.body);
+        final Map<String, dynamic> responseData = response.data;
+        final List items = responseData['data']?['items'] ?? [];
         setState(() {
-          _orderItems = (data['items'] as List)
-              .map((e) => OrderItem.fromJson(e))
-              .toList();
+          _orderItems = items.map((e) => OrderItem.fromJson(e)).toList();
           _isLoading = false;
         });
       }

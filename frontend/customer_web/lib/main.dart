@@ -1,75 +1,87 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'screens/menu_screen.dart';
-import 'screens/product_detail_screen.dart';
 import 'screens/cart_screen.dart';
 import 'screens/order_tracking_screen.dart';
-import 'screens/error_screen.dart'; // Trang lỗi nếu không có QR
+import 'screens/error_screen.dart';
 
 void main() {
-  runApp(const MyApp());
+  runApp(const ProviderScope(child: CustomerApp()));
 }
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+class CustomerApp extends StatelessWidget {
+  const CustomerApp({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final GoRouter _router = GoRouter(
+    final router = GoRouter(
       initialLocation: '/',
       routes: [
-        // Route chính sẽ redirect về /table/:tableId hoặc trang lỗi nếu không có QR
         GoRoute(
           path: '/',
           builder: (context, state) {
-            final tableId = state.queryParams['tableId'];
-            if (tableId != null) {
+            final tableId = state.uri.queryParameters['tableId'];
+            if (tableId != null && tableId.isNotEmpty) {
               return MenuScreen(tableId: tableId);
-            } else {
-              return ErrorScreen(); // Trang lỗi nếu không có QR
             }
+            return const ErrorScreen();
           },
         ),
-        // Route cho MenuScreen
         GoRoute(
           path: '/table/:tableId',
-          builder: (context, state) {
-            final tableId = state.params['tableId']!;
-            return MenuScreen(tableId: tableId);
-          },
+          builder: (context, state) =>
+              MenuScreen(tableId: state.pathParameters['tableId'] ?? ''),
         ),
-        // Route cho ProductDetailScreen
-        GoRoute(
-          path: '/table/:tableId/product/:itemId',
-          builder: (context, state) {
-            final tableId = state.params['tableId']!;
-            final itemId = state.params['itemId']!;
-            return ProductDetailScreen(tableId: tableId, itemId: itemId);
-          },
-        ),
-        // Route cho CartScreen
         GoRoute(
           path: '/table/:tableId/cart',
-          builder: (context, state) {
-            final tableId = state.params['tableId']!;
-            return CartScreen(tableId: tableId);
-          },
+          builder: (context, state) =>
+              CartScreen(tableId: state.pathParameters['tableId'] ?? ''),
         ),
-        // Route cho OrderTrackingScreen
         GoRoute(
           path: '/table/:tableId/tracking/:orderId',
-          builder: (context, state) {
-            final tableId = state.params['tableId']!;
-            final orderId = state.params['orderId']!;
-            return OrderTrackingScreen(tableId: tableId, orderId: orderId);
-          },
+          builder: (context, state) => OrderTrackingScreen(
+            tableId: state.pathParameters['tableId']!,
+            orderId: state.pathParameters['orderId']!,
+          ),
         ),
       ],
     );
 
     return MaterialApp.router(
-      routerConfig: _router,
-      title: 'Flutter GoRouter Demo',
+      title: 'Gọi món — Nhà hàng',
+      debugShowCheckedModeBanner: false,
+      routerConfig: router,
+      theme: ThemeData(
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: const Color(0xFFE53935),
+          brightness: Brightness.light,
+        ),
+        textTheme: GoogleFonts.beVietnamProTextTheme(),
+        useMaterial3: true,
+        appBarTheme: const AppBarTheme(
+          backgroundColor: Color(0xFFE53935),
+          foregroundColor: Colors.white,
+          elevation: 0,
+          centerTitle: false,
+        ),
+        elevatedButtonTheme: ElevatedButtonThemeData(
+          style: ElevatedButton.styleFrom(
+            backgroundColor: const Color(0xFFE53935),
+            foregroundColor: Colors.white,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+          ),
+        ),
+        cardTheme: CardThemeData(
+          elevation: 0,
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          color: Colors.white,
+        ),
+      ),
     );
   }
 }
