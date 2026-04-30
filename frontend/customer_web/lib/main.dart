@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:flutter_web_plugins/url_strategy.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'screens/menu_screen.dart';
 import 'screens/cart_screen.dart';
@@ -8,6 +9,7 @@ import 'screens/order_tracking_screen.dart';
 import 'screens/error_screen.dart';
 
 void main() {
+  usePathUrlStrategy();
   runApp(const ProviderScope(child: CustomerApp()));
 }
 
