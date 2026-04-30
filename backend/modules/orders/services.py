@@ -295,6 +295,33 @@ async def get_order(db: Session, order_id: uuid.UUID) -> Order:
         raise HTTPException(status_code=404, detail="Order not found")
     return order
 
+async def get_order_tracking(db: Session, order_id: uuid.UUID) -> dict:
+    order = db.get(Order, order_id)
+    if not order:
+        raise HTTPException(status_code=404, detail="Order not found")
+    
+    from modules.menu.models import MenuItem
+    
+    items = []
+    for item in order.items:
+        menu_item = db.get(MenuItem, item.menu_item_id)
+        items.append({
+            "id": item.id,
+            "menu_item_id": item.menu_item_id,
+            "name": menu_item.name if menu_item else "Unknown",
+            "image_url": menu_item.image_url if menu_item and menu_item.image_url else "",
+            "quantity": item.qty,
+            "price": item.price,
+            "status": item.status.value
+        })
+        
+    return {
+        "id": order.id,
+        "status": order.status.value,
+        "items": items
+    }
+
+
 
 async def list_orders_by_table(db: Session, table_id: uuid.UUID) -> list[Order]:
     return (

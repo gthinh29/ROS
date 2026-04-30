@@ -10,7 +10,7 @@ from core.database import get_db
 from core.denpendencies.role_access import require_role
 from core.enums import UserRole
 from modules.orders import services
-from modules.orders.schemas import OrderCreate, OrderItemStatusUpdate, OrderRead
+from modules.orders.schemas import OrderCreate, OrderItemStatusUpdate, OrderRead, OrderTrackingRead
 from utils.response_wrapper import ResponseWrapper
 
 router = APIRouter(prefix="/orders", tags=["Orders"])
@@ -40,6 +40,15 @@ async def get_order(
 ):
     """Get a single order by ID."""
     result = await services.get_order(db, order_id)
+    return ResponseWrapper.success_response(result)
+
+@router.get("/{order_id}/tracking", response_model=ResponseWrapper[OrderTrackingRead], response_model_exclude_none=True)
+async def get_order_tracking(
+    order_id: uuid.UUID,
+    db: Session = Depends(get_db),
+):
+    """Get a single order by ID for customer tracking. Public endpoint."""
+    result = await services.get_order_tracking(db, order_id)
     return ResponseWrapper.success_response(result)
 
 

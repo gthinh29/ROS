@@ -58,6 +58,17 @@ class OrderItemRead(BaseModel):
 
     model_config = {"from_attributes": True}
 
+class OrderItemTrackingRead(BaseModel):
+    id: uuid.UUID
+    menu_item_id: uuid.UUID
+    name: str
+    image_url: str
+    quantity: int
+    price: float
+    status: str
+
+    model_config = {"from_attributes": True}
+
 
 class OrderRead(BaseModel):
     id: uuid.UUID
@@ -71,3 +82,11 @@ class OrderRead(BaseModel):
     items: List[OrderItemRead] = []
 
     model_config = {"from_attributes": True}
+
+class OrderTrackingRead(BaseModel):
+    id: uuid.UUID
+    status: str
+    items: List[OrderItemTrackingRead] = []
+
+    model_config = {"from_attributes": True}
+
