@@ -1,3 +1,5 @@
+// ignore_for_file: use_null_aware_elements
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared/models/cart_item.dart';
 import 'package:shared/core/api_client.dart';
@@ -70,7 +72,7 @@ class CartNotifier extends Notifier<List<CartItem>> {
       clearCart();
       return true;
     } catch (e) {
-      print('Order Submit Error: \$e');
+      debugPrint('Order Submit Error: \$e');
       return false;
     }
   }

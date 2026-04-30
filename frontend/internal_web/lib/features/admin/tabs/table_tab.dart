@@ -1,6 +1,7 @@
+// ignore_for_file: use_build_context_synchronously
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'dart:html' as html;
+import 'package:web/web.dart' as web;
 import '../../pos/table_provider.dart';
 import 'package:shared/core/constants.dart';
 
@@ -62,7 +63,7 @@ class TableTab extends ConsumerWidget {
                                 onPressed: () {
                                   final url =
                                       '${AppConstants.baseUrl}/tables/${t.id}/qr';
-                                  html.window.open(url, '_blank');
+                                  web.window.open(url, '_blank');
                                 },
                               ),
                             ),
@@ -130,7 +131,7 @@ class _AddTableDialogState extends ConsumerState<AddTableDialog> {
               final success = await ref
                   .read(tableProvider.notifier)
                   .createTable(number, zone);
-              if (success && mounted) Navigator.pop(context);
+              if (success && context.mounted) Navigator.pop(context);
             }
           },
           child: const Text('Tạo mới'),

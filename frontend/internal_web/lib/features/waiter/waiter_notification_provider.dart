@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'dart:convert';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
@@ -83,7 +84,7 @@ class ReadyItemsNotifier extends Notifier<List<ReadyItem>> {
       removeItem(itemId);
       return true;
     } catch (e) {
-      print('SERVED ERROR: $e');
+      debugPrint('SERVED ERROR: $e');
       // Reset loading
       state = state
           .map((item) => item.itemId == itemId
@@ -122,12 +123,12 @@ class WaiterNotificationNotifier extends Notifier<WaiterNotification?> {
   void _connectWebSocket(String userId) {
     try {
       final wsUrl = '${AppConstants.wsUrl}/staff/$userId';
-      print('WAITER WS: Connecting to $wsUrl');
+      debugPrint('WAITER WS: Connecting to $wsUrl');
       _channel = WebSocketChannel.connect(Uri.parse(wsUrl));
 
       _channel!.stream.listen(
         (message) {
-          print('WAITER WS: Received -> $message');
+          debugPrint('WAITER WS: Received -> $message');
           try {
             final data = jsonDecode(message) as Map<String, dynamic>;
             final event = data['event'] as String?;
@@ -173,14 +174,14 @@ class WaiterNotificationNotifier extends Notifier<WaiterNotification?> {
               }
             }
           } catch (e) {
-            print('WAITER WS JSON Error: $e');
+            debugPrint('WAITER WS JSON Error: $e');
           }
         },
-        onError: (e) => print('WAITER WS Stream Error: $e'),
-        onDone: () => print('WAITER WS: Closed'),
+        onError: (e) => debugPrint('WAITER WS Stream Error: $e'),
+        onDone: () => debugPrint('WAITER WS: Closed'),
       );
     } catch (e) {
-      print('WAITER WS Connect Error: $e');
+      debugPrint('WAITER WS Connect Error: $e');
     }
   }
 }

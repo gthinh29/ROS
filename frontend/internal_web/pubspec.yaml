@@ -41,6 +41,7 @@ dependencies:
   shared_preferences: ^2.5.4
   audioplayers: ^6.6.0
   google_fonts: ^8.0.2
+  web: ^0.5.1
   shared:
     path: ../shared
 

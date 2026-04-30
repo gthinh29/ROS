@@ -1,3 +1,4 @@
+// ignore_for_file: use_build_context_synchronously
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -23,14 +24,14 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       _passwordController.text,
     );
     if (!success) {
-      if (mounted) {
+      if (context.mounted) {
         final error = ref.read(authProvider).error;
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(error ?? 'Login failed')),
         );
       }
     } else {
-      if (mounted) {
+      if (context.mounted) {
         final role = ref.read(authProvider).user?.role;
         if (role == UserRole.kitchen || role == UserRole.bar) {
           context.go('/kds');
@@ -78,7 +79,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 shape: BoxShape.circle,
                 gradient: RadialGradient(
                   colors: [
-                    Colors.orange.withOpacity(0.4),
+                    Colors.orange.withValues(alpha: 0.4),
                     Colors.transparent,
                   ],
                 ),
@@ -96,7 +97,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 shape: BoxShape.circle,
                 gradient: RadialGradient(
                   colors: [
-                    Colors.redAccent.withOpacity(0.25),
+                    Colors.redAccent.withValues(alpha: 0.25),
                     Colors.transparent,
                   ],
                 ),
@@ -113,9 +114,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   width: 400,
                   padding: const EdgeInsets.all(40),
                   decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.15),
+                    color: Colors.white.withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(24),
-                    border: Border.all(color: Colors.white.withOpacity(0.2)),
+                    border: Border.all(color: Colors.white.withValues(alpha: 0.2)),
                   ),
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
@@ -144,7 +145,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                           labelText: 'Email / Tên đăng nhập', 
                           labelStyle: const TextStyle(color: Colors.white70),
                           filled: true,
-                          fillColor: Colors.black.withOpacity(0.3),
+                          fillColor: Colors.black.withValues(alpha: 0.3),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
                             borderSide: BorderSide.none,
@@ -161,7 +162,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                           labelText: 'Mật khẩu', 
                           labelStyle: const TextStyle(color: Colors.white70),
                           filled: true,
-                          fillColor: Colors.black.withOpacity(0.3),
+                          fillColor: Colors.black.withValues(alpha: 0.3),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
                             borderSide: BorderSide.none,
@@ -219,9 +220,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
                 child: Container(
                   decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.15),
+                    color: Colors.white.withValues(alpha: 0.15),
                     shape: BoxShape.circle,
-                    border: Border.all(color: Colors.white.withOpacity(0.2)),
+                    border: Border.all(color: Colors.white.withValues(alpha: 0.2)),
                   ),
                   child: IconButton(
                     icon: const Icon(Icons.arrow_back, color: Colors.white),

@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'dart:convert';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
@@ -63,12 +64,12 @@ class TableNotifier extends Notifier<AsyncValue<List<TableModel>>> {
           _fetchTables();
         }
       }, onError: (e) {
-        print('WS Error: $e');
+        debugPrint('WS Error: $e');
       }, onDone: () {
-        print('WS Closed');
+        debugPrint('WS Closed');
       });
     } catch (e) {
-      print('WS Connect Error: $e');
+      debugPrint('WS Connect Error: $e');
     }
   }
 

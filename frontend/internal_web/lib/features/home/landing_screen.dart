@@ -14,7 +14,7 @@ class LandingScreen extends StatelessWidget {
           Image.network(
             'bg_index.jpg',
             fit: BoxFit.cover,
-            color: Colors.black.withOpacity(0.5),
+            color: Colors.black.withValues(alpha: 0.5),
             colorBlendMode: BlendMode.darken,
           ),
           // Content

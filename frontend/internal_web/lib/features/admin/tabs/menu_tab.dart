@@ -1,3 +1,4 @@
+// ignore_for_file: use_build_context_synchronously
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/admin_menu_provider.dart';
@@ -33,7 +34,7 @@ class MenuTab extends ConsumerWidget {
                   child: ConstrainedBox(
                     constraints: BoxConstraints(minWidth: constraints.maxWidth),
                     child: DataTable(
-                      headingRowColor: MaterialStateProperty.all(Colors.grey.shade50),
+                      headingRowColor: WidgetStateProperty.all(Colors.grey.shade50),
                       columns: const [
                         DataColumn(label: Text('Tên món')),
                         DataColumn(label: Text('Giá (VNĐ)')),
@@ -139,13 +140,13 @@ class _MenuFormDialogState extends ConsumerState<MenuFormDialog> {
                 onSaved: (val) => basePrice = double.tryParse(val ?? '0') ?? 0,
               ),
               DropdownButtonFormField<String>(
-                value: categoryId.isEmpty ? widget.categories.first.id : categoryId,
+                initialValue: categoryId.isEmpty ? widget.categories.first.id : categoryId,
                 items: widget.categories.map((c) => DropdownMenuItem(value: c.id, child: Text(c.name))).toList(),
                 onChanged: (val) => setState(() => categoryId = val!),
                 decoration: const InputDecoration(labelText: 'Danh mục'),
               ),
               DropdownButtonFormField<String>(
-                value: kdsZone,
+                initialValue: kdsZone,
                 items: const [
                   DropdownMenuItem(value: 'kitchen', child: Text('Bếp (Kitchen)')),
                   DropdownMenuItem(value: 'bar', child: Text('Quầy Pha Chế (Bar)')),
@@ -181,7 +182,7 @@ class _MenuFormDialogState extends ConsumerState<MenuFormDialog> {
               } else {
                 success = await ref.read(adminMenuProvider.notifier).updateItem(widget.item!.id, payload);
               }
-              if (success && mounted) Navigator.pop(context);
+              if (success && context.mounted) Navigator.pop(context);
             }
           },
           child: const Text('Lưu'),

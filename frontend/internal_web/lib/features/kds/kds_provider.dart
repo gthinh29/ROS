@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'dart:convert';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
@@ -100,7 +101,7 @@ class KdsNotifier extends Notifier<AsyncValue<List<OrderItemModel>>> {
         await apiClient.patch('/orders/$orderId/items/$itemId/status', data: {'status': newStatus.name.toUpperCase()});
       }
     } catch (e) {
-      print('API error $e');
+      debugPrint('API error $e');
     }
   }
 }

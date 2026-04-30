@@ -54,7 +54,7 @@ class TableTile extends StatelessWidget {
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
-              color: _getGradient()[1].withOpacity(0.3),
+              color: _getGradient()[1].withValues(alpha: 0.3),
               blurRadius: 8,
               offset: const Offset(0, 4),
             ),
@@ -71,7 +71,7 @@ class TableTile extends StatelessWidget {
               child: Icon(
                 _getIcon(), 
                 size: 80, 
-                color: textColor.withOpacity(0.15)
+                color: textColor.withValues(alpha: 0.15)
               ),
             ),
             Padding(
@@ -84,9 +84,9 @@ class TableTile extends StatelessWidget {
                     children: [
                       Text(
                         table.zone, 
-                        style: TextStyle(fontWeight: FontWeight.w600, color: textColor.withOpacity(0.8), fontSize: 13)
+                        style: TextStyle(fontWeight: FontWeight.w600, color: textColor.withValues(alpha: 0.8), fontSize: 13)
                       ),
-                      Icon(_getIcon(), size: 18, color: textColor.withOpacity(0.8)),
+                      Icon(_getIcon(), size: 18, color: textColor.withValues(alpha: 0.8)),
                     ],
                   ),
                   const Spacer(),
@@ -98,7 +98,7 @@ class TableTile extends StatelessWidget {
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                     decoration: BoxDecoration(
-                      color: textColor.withOpacity(0.15),
+                      color: textColor.withValues(alpha: 0.15),
                       borderRadius: BorderRadius.circular(6),
                     ),
                     child: Text(

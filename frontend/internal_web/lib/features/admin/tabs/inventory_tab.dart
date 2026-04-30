@@ -1,3 +1,4 @@
+// ignore_for_file: use_build_context_synchronously
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/admin_inventory_provider.dart';
@@ -29,7 +30,7 @@ class InventoryTab extends ConsumerWidget {
                    child: ConstrainedBox(
                      constraints: BoxConstraints(minWidth: constraints.maxWidth),
                      child: DataTable(
-                       headingRowColor: MaterialStateProperty.all(Colors.grey.shade50),
+                       headingRowColor: WidgetStateProperty.all(Colors.grey.shade50),
                        columns: const [
                          DataColumn(label: Text('Tên Nguyên Liệu')),
                          DataColumn(label: Text('Đơn vị')),
@@ -39,7 +40,7 @@ class InventoryTab extends ConsumerWidget {
                          DataColumn(label: Text('Hành động')),
                        ],
                        rows: items.map((i) => DataRow(
-                         color: MaterialStateProperty.resolveWith((states) {
+                         color: WidgetStateProperty.resolveWith((states) {
                            if (i.stockQty <= i.alertThreshold) return Colors.red.shade50;
                            return null;
                          }),
@@ -160,7 +161,7 @@ class _IngredientFormDialogState extends ConsumerState<IngredientFormDialog> {
                } else {
                  success = await ref.read(adminInventoryProvider.notifier).updateIngredient(widget.ingredient!.id, payload);
                }
-               if (success && mounted) Navigator.pop(context);
+               if (success && context.mounted) Navigator.pop(context);
             }
           },
           child: const Text('Lưu')

@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -14,7 +15,7 @@ class KdsAudioNotifier extends Notifier<bool> {
     try {
       await _player.play(UrlSource('https://actions.google.com/sounds/v1/alarms/beep_short.ogg'), volume: 1.0);
     } catch (e) {
-      print('Audio play error: $e');
+      debugPrint('Audio play error: $e');
     }
   }
 

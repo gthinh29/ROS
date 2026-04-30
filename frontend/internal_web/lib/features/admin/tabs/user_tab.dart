@@ -1,3 +1,4 @@
+// ignore_for_file: use_build_context_synchronously
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/admin_user_provider.dart';
@@ -29,7 +30,7 @@ class UserTab extends ConsumerWidget {
                   child: ConstrainedBox(
                     constraints: BoxConstraints(minWidth: constraints.maxWidth),
                     child: DataTable(
-                      headingRowColor: MaterialStateProperty.all(Colors.grey.shade50),
+                      headingRowColor: WidgetStateProperty.all(Colors.grey.shade50),
                       columns: const [
                         DataColumn(label: Text('Tên')),
                         DataColumn(label: Text('Email')),
@@ -124,7 +125,7 @@ class _UserFormDialogState extends ConsumerState<UserFormDialog> {
                 onSaved: (val) => phone = val,
               ),
               DropdownButtonFormField<String>(
-                value: role.toUpperCase(),
+                initialValue: role.toUpperCase(),
                 items: const [
                   DropdownMenuItem(value: 'ADMIN', child: Text('Admin')),
                   DropdownMenuItem(value: 'CASHIER', child: Text('Thu Ngân')),
@@ -179,9 +180,9 @@ class _UserFormDialogState extends ConsumerState<UserFormDialog> {
                 success = await ref.read(adminUserProvider.notifier).updateUser(widget.user!.id, payload);
               }
               
-              if (success && mounted) {
+              if (success && context.mounted) {
                  Navigator.pop(context);
-              } else if (mounted) {
+              } else if (context.mounted) {
                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Có lỗi xảy ra (bị trùng Email/Phone hoặc dữ liệu sai)')));
               }
             }

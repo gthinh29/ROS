@@ -1,3 +1,4 @@
+// ignore_for_file: use_build_context_synchronously
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared/models/menu.dart';
@@ -51,12 +52,16 @@ class _CreateOrderFlowState extends ConsumerState<CreateOrderFlow>
                   children: [
                     if (item.variants.isNotEmpty) ...[
                       const Text('Chọn loại:', style: TextStyle(fontWeight: FontWeight.bold)),
-                      ...item.variants.map((v) => RadioListTile<Variant>(
-                            title: Text('${v.name} (+${v.extraPrice.toStringAsFixed(0)} ₫)'),
-                            value: v,
-                            groupValue: selectedVariant,
-                            onChanged: (val) => setDlgState(() => selectedVariant = val),
-                          )),
+                      RadioGroup<Variant>(
+                        groupValue: selectedVariant,
+                        onChanged: (val) => setDlgState(() => selectedVariant = val),
+                        child: Column(
+                          children: item.variants.map((v) => RadioListTile<Variant>(
+                                title: Text('${v.name} (+${v.extraPrice.toStringAsFixed(0)} ₫)'),
+                                value: v,
+                              )).toList(),
+                        ),
+                      ),
                       const Divider(),
                     ],
                     if (item.modifiers.isNotEmpty) ...[
@@ -467,7 +472,7 @@ class _ProgressItemTile extends StatelessWidget {
             width: 40,
             height: 40,
             decoration: BoxDecoration(
-              color: color.withOpacity(0.15),
+              color: color.withValues(alpha: 0.15),
               shape: BoxShape.circle,
             ),
             child: Icon(icon, color: color, size: 20),
@@ -516,9 +521,9 @@ class _ProgressItemTile extends StatelessWidget {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
             decoration: BoxDecoration(
-              color: color.withOpacity(0.15),
+              color: color.withValues(alpha: 0.15),
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: color.withOpacity(0.4)),
+              border: Border.all(color: color.withValues(alpha: 0.4)),
             ),
             child: Text(
               label,

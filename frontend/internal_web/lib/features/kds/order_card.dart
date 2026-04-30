@@ -1,3 +1,4 @@
+// ignore_for_file: use_build_context_synchronously
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:shared/models/order.dart';
@@ -27,7 +28,7 @@ class _OrderCardState extends State<OrderCard> {
     super.initState();
     _elapsed = DateTime.now().difference(widget.item.createdAt);
     _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
-      if (mounted) {
+      if (context.mounted) {
         setState(() {
           _elapsed = DateTime.now().difference(widget.item.createdAt);
         });
@@ -83,7 +84,7 @@ class _OrderCardState extends State<OrderCard> {
           border: Border.all(color: borderColor, width: 2),
           boxShadow: widget.item.status != OrderItemStatus.pending && !isCancelled ? [
             BoxShadow(
-              color: borderColor.withOpacity(0.3),
+              color: borderColor.withValues(alpha: 0.3),
               blurRadius: 12,
               spreadRadius: 1,
               offset: const Offset(0, 4),
@@ -103,7 +104,7 @@ class _OrderCardState extends State<OrderCard> {
                     child: Container(
                       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                       decoration: BoxDecoration(
-                        color: borderColor.withOpacity(0.2),
+                        color: borderColor.withValues(alpha: 0.2),
                         borderRadius: BorderRadius.circular(6),
                       ),
                       child: Text(
@@ -154,13 +155,13 @@ class _OrderCardState extends State<OrderCard> {
                   if (widget.batchedQty > 1)
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                      decoration: BoxDecoration(color: Colors.blueAccent.withOpacity(0.2), borderRadius: BorderRadius.circular(8)),
+                      decoration: BoxDecoration(color: Colors.blueAccent.withValues(alpha: 0.2), borderRadius: BorderRadius.circular(8)),
                       child: Text('x${widget.batchedQty}', style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w900, color: Colors.blueAccent)),
                     ),
                   if (widget.batchedQty == 1 && widget.item.qty > 1)
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                      decoration: BoxDecoration(color: Colors.blueAccent.withOpacity(0.2), borderRadius: BorderRadius.circular(8)),
+                      decoration: BoxDecoration(color: Colors.blueAccent.withValues(alpha: 0.2), borderRadius: BorderRadius.circular(8)),
                       child: Text('x${widget.item.qty}', style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w900, color: Colors.blueAccent)),
                     ),
                 ],

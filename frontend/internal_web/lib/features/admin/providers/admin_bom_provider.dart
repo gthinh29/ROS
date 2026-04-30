@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:dio/dio.dart';
 import 'package:shared/core/api_client.dart';
@@ -31,7 +32,7 @@ class AdminBomService {
       );
       return true;
     } catch (e) {
-      print('Set BOM Error: $e');
+      debugPrint('Set BOM Error: $e');
       return false;
     }
   }

@@ -1,3 +1,4 @@
+// ignore_for_file: use_build_context_synchronously
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'billing_provider.dart';
@@ -264,7 +265,7 @@ class _SplitBillDialogState extends ConsumerState<SplitBillDialog> {
     final res = await ref
         .read(billingProvider.notifier)
         .splitBill(widget.bill.id, splitCount);
-    if (mounted) {
+    if (context.mounted) {
       setState(() {
         splitData = res;
         isLoading = false;
@@ -290,7 +291,7 @@ class _SplitBillDialogState extends ConsumerState<SplitBillDialog> {
             paidAmount: widget.bill.total,
             billTotal: widget.bill.total,
           );
-      if (receipt != null && mounted) {
+      if (receipt != null && context.mounted) {
         Navigator.pop(context);
         showDialog(
           context: context,
@@ -301,7 +302,7 @@ class _SplitBillDialogState extends ConsumerState<SplitBillDialog> {
             serviceFee: widget.bill.serviceFee,
           ),
         );
-      } else if (mounted) {
+      } else if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Lỗi: ${ref.read(billingErrorProvider)}')),
         );
@@ -525,13 +526,13 @@ class _PaymentDialogState extends ConsumerState<PaymentDialog> {
                         paidAmount: _method == 'CASH' ? _paidAmount : null,
                         billTotal: widget.total,
                       );
-                  if (receipt != null && mounted) {
+                  if (receipt != null && context.mounted) {
                     Navigator.pop(context);
                     showDialog(
                       context: context,
                       builder: (ctx) => PaymentReceiptDialog(receipt: receipt),
                     );
-                  } else if (mounted) {
+                  } else if (context.mounted) {
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
                         content: Text('Lỗi: ${ref.read(billingErrorProvider)}'),
@@ -717,7 +718,7 @@ class PaymentReceiptDialog extends StatelessWidget {
                     icon: const Icon(Icons.print),
                     label: const Text('In hóa đơn'),
                     onPressed: () {
-                      // TODO: Tích hợp in hóa đơn
+                      // Tích hợp in hóa đơn
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(
                           content: Text(

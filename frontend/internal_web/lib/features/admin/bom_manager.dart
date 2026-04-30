@@ -1,3 +1,4 @@
+// ignore_for_file: use_build_context_synchronously
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'providers/admin_bom_provider.dart';
@@ -35,7 +36,7 @@ class _BomManagerState extends ConsumerState<BomManager> {
         isLoading = false;
       });
     } catch (e) {
-      if (mounted) setState(() => isLoading = false);
+      if (context.mounted) setState(() => isLoading = false);
     }
   }
 
@@ -53,11 +54,11 @@ class _BomManagerState extends ConsumerState<BomManager> {
     }
     setState(() => isLoading = true);
     final success = await ref.read(adminBomProvider).setBom(widget.menuItem.id, bomItems);
-    if (success && mounted) {
+    if (success && context.mounted) {
        Navigator.pop(context);
        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Đã lưu cấu hình BOM thành công')));
     } else {
-       if (mounted) {
+       if (context.mounted) {
          setState(() => isLoading = false);
          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Lỗi khi lưu cấu hình BOM')));
        }
@@ -119,7 +120,7 @@ class _BomManagerState extends ConsumerState<BomManager> {
                                       flex: 3,
                                       child: DropdownButtonFormField<String>(
                                          decoration: const InputDecoration(labelText: 'Tên Nguyên Liệu', isDense: true, border: OutlineInputBorder()),
-                                         value: validIds.contains(ingId) ? ingId : null,
+                                         initialValue: validIds.contains(ingId) ? ingId : null,
                                          items: ingredients.map((i) => DropdownMenuItem(value: i.id, child: Text(i.name))).toList(),
                                          onChanged: (val) {
                                             if (val != null) {
