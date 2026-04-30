@@ -1,5 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared/models/cart_item.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'dart:convert';
 
 // ── Cart state — dùng typed CartItem giống Internal Web ──────────────────────
 
@@ -51,4 +53,51 @@ class CartNotifier extends StateNotifier<List<CartItem>> {
 
 final cartProvider = StateNotifierProvider<CartNotifier, List<CartItem>>(
   (ref) => CartNotifier(),
+);
+
+// ── Active Orders State ────────────────────────────────────────────────────────
+
+class ActiveOrdersNotifier extends StateNotifier<List<String>> {
+  ActiveOrdersNotifier() : super([]) {
+    _loadFromPrefs();
+  }
+
+  Future<void> _loadFromPrefs() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final String? jsonStr = prefs.getString('active_order_ids');
+      if (jsonStr != null) {
+        final List<dynamic> decoded = jsonDecode(jsonStr);
+        state = decoded.cast<String>();
+      }
+    } catch (e) {
+      // ignore
+    }
+  }
+
+  Future<void> addOrder(String orderId) async {
+    if (!state.contains(orderId)) {
+      state = [...state, orderId];
+      _saveToPrefs();
+    }
+  }
+
+  Future<void> removeOrder(String orderId) async {
+    state = state.where((id) => id != orderId).toList();
+    _saveToPrefs();
+  }
+  
+  Future<void> _saveToPrefs() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('active_order_ids', jsonEncode(state));
+    } catch (e) {
+      // ignore
+    }
+  }
+}
+
+final activeOrdersProvider =
+    StateNotifierProvider<ActiveOrdersNotifier, List<String>>(
+  (ref) => ActiveOrdersNotifier(),
 );

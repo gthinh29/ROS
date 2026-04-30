@@ -30,6 +30,10 @@ dependencies:
   # Fonts
   google_fonts: ^6.2.1
 
+  shared_preferences: ^2.3.2
+  flutter_web_plugins:
+    sdk: flutter
+
   shared:
     path: ../shared
 
