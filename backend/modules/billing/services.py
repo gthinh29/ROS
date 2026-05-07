@@ -74,7 +74,7 @@ async def create_bill(db: Session, payload: BillCreate) -> Bill:
 
     if not billable_items:
         raise HTTPException(
-            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
             detail="Không có món ăn nào đã hoàn thành (READY/SERVED) để tính tiền.",
         )
 
@@ -152,7 +152,7 @@ async def checkout(db: Session, payload: CheckoutRequest) -> CheckoutResponse:
     if payload.payment_method.value == "CASH":
         if paid_amount < total:
             raise HTTPException(
-                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
                 detail=f"Insufficient cash: need {total}, received {paid_amount}",
             )
     else:
