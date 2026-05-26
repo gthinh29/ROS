@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared/models/order_item.dart';
@@ -53,31 +54,31 @@ class _TrackingSidebarState extends ConsumerState<TrackingSidebar> {
       return;
     }
 
-    try {
-      List<OrderItem> aggregated = [];
-      for (final id in orderIds) {
-        final response = await ApiClient().dio.get('/orders/$id/tracking');
-        if (response.statusCode == 200) {
-          final Map<String, dynamic> responseData = response.data;
-          final List items = responseData['data']?['items'] ?? [];
-          aggregated.addAll(items.map((e) => OrderItem.fromJson(e)).toList());
+    final List<OrderItem> aggregated = [];
+    for (final id in orderIds) {
+      try {
+        final response = await ApiClient().dio.get(
+          '/orders/$id/tracking',
+          options: Options(validateStatus: (s) => s != null && s < 500),
+        );
+        if (response.statusCode != 200) {
+          debugPrint('Order $id tracking returned ${response.statusCode}');
+          continue;
         }
+        final data = response.data;
+        if (data is! Map<String, dynamic>) continue;
+        final List items = (data['data'] as Map?)?['items'] as List? ?? const [];
+        aggregated.addAll(items.map((e) => OrderItem.fromJson(e)));
+      } catch (e) {
+        debugPrint('Order $id polling error: $e');
       }
+    }
 
-      // Auto cleanup completed orders if all items in an order are SERVED?
-      // For simplicity, just display them. If all are served, the banner handles it.
-
-      if (mounted) {
-        setState(() {
-          _allItems = aggregated;
-          _isLoading = false;
-        });
-      }
-    } catch (e) {
-      debugPrint('Polling multiple orders error: $e');
-      if (mounted) {
-        setState(() => _isLoading = false);
-      }
+    if (mounted) {
+      setState(() {
+        _allItems = aggregated;
+        _isLoading = false;
+      });
     }
   }
 

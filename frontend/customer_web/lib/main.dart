@@ -7,6 +7,10 @@ import 'screens/menu_screen.dart';
 import 'screens/cart_screen.dart';
 import 'screens/order_tracking_screen.dart';
 import 'screens/error_screen.dart';
+import 'screens/product_detail_screen.dart';
+import 'screens/reservation/reservation_screen.dart';
+import 'screens/reservation/reservation_success_screen.dart';
+import 'screens/reservation/pre_order_picker_screen.dart';
 
 void main() {
   usePathUrlStrategy();
@@ -42,11 +46,56 @@ class CustomerApp extends StatelessWidget {
               CartScreen(tableId: state.pathParameters['tableId'] ?? ''),
         ),
         GoRoute(
+          path: '/table/:tableId/product/:itemId',
+          builder: (context, state) {
+            final tableId = state.pathParameters['tableId'];
+            final itemId = state.pathParameters['itemId'];
+            if (tableId == null || tableId.isEmpty || itemId == null || itemId.isEmpty) {
+              return const ErrorScreen();
+            }
+            return ProductDetailScreen(tableId: tableId, itemId: itemId);
+          },
+        ),
+        GoRoute(
           path: '/table/:tableId/tracking/:orderId',
-          builder: (context, state) => OrderTrackingScreen(
-            tableId: state.pathParameters['tableId']!,
-            orderId: state.pathParameters['orderId']!,
-          ),
+          builder: (context, state) {
+            final tableId = state.pathParameters['tableId'];
+            final orderId = state.pathParameters['orderId'];
+            if (tableId == null || tableId.isEmpty || orderId == null || orderId.isEmpty) {
+              return const ErrorScreen();
+            }
+            return OrderTrackingScreen(tableId: tableId, orderId: orderId);
+          },
+        ),
+        GoRoute(
+          path: '/reservation',
+          builder: (context, state) => const ReservationScreen(),
+        ),
+        GoRoute(
+          path: '/reservation/pre-order',
+          builder: (context, state) => const PreOrderPickerScreen(),
+        ),
+        GoRoute(
+          path: '/reservation/success',
+          builder: (context, state) {
+            final extra = state.extra;
+            if (extra is! Map) return const ErrorScreen();
+            final id = extra['id']?.toString() ?? '';
+            final name = extra['customer_name']?.toString() ?? '';
+            final phone = extra['phone']?.toString() ?? '';
+            final reservedAt = extra['reserved_at'];
+            final partySize = extra['party_size'];
+            if (reservedAt is! DateTime || partySize is! int) {
+              return const ErrorScreen();
+            }
+            return ReservationSuccessScreen(
+              id: id,
+              customerName: name,
+              phone: phone,
+              reservedAt: reservedAt,
+              partySize: partySize,
+            );
+          },
         ),
       ],
     );

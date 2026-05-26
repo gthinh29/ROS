@@ -1,4 +1,6 @@
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shared/core/api_client.dart';
@@ -22,14 +24,20 @@ class CartScreen extends ConsumerStatefulWidget {
 
 class _CartScreenState extends ConsumerState<CartScreen> {
   bool _submitting = false;
+  final _formKey = GlobalKey<FormState>();
+  final _nameCtrl = TextEditingController();
+  final _phoneCtrl = TextEditingController();
 
   @override
   void dispose() {
+    _nameCtrl.dispose();
+    _phoneCtrl.dispose();
     super.dispose();
   }
 
   Future<void> _placeOrder(List<CartItem> cart) async {
     if (cart.isEmpty) return;
+    if (!_formKey.currentState!.validate()) return;
 
     setState(() => _submitting = true);
 
@@ -45,6 +53,8 @@ class _CartScreenState extends ConsumerState<CartScreen> {
       final res = await ApiClient().dio.post('/orders', data: {
         'table_id': widget.tableId,
         'type': 'DINE_IN',
+        'customer_name': _nameCtrl.text.trim(),
+        'phone': _phoneCtrl.text.trim(),
         'items': items,
       });
 
@@ -59,6 +69,17 @@ class _CartScreenState extends ConsumerState<CartScreen> {
         _snack('Đặt món thành công! Bạn có thể theo dõi tại menu bên trái.');
       } else {
         _snack('Không nhận được mã đơn hàng', error: true);
+      }
+    } on DioException catch (e) {
+      if (!mounted) return;
+      if (e.type == DioExceptionType.connectionTimeout ||
+          e.type == DioExceptionType.receiveTimeout ||
+          e.type == DioExceptionType.sendTimeout ||
+          e.type == DioExceptionType.connectionError) {
+        _snack('Mất kết nối, thử lại', error: true);
+      } else {
+        final code = e.response?.statusCode;
+        _snack('Lỗi đặt món${code != null ? ' ($code)' : ''}', error: true);
       }
     } catch (e) {
       if (mounted) _snack('Lỗi đặt món: $e', error: true);
@@ -101,11 +122,23 @@ class _CartScreenState extends ConsumerState<CartScreen> {
       ),
       body: cart.isEmpty
           ? _EmptyCart(tableId: widget.tableId)
-          : ListView.separated(
-              padding: const EdgeInsets.all(16),
-              itemCount: cart.length,
-              separatorBuilder: (_, _) => const SizedBox(height: 12),
-              itemBuilder: (_, index) => _CartItemTile(item: cart[index], index: index),
+          : Form(
+              key: _formKey,
+              child: ListView(
+                padding: const EdgeInsets.all(16),
+                children: [
+                  ...List.generate(cart.length, (i) => Padding(
+                        padding: EdgeInsets.only(bottom: i == cart.length - 1 ? 0 : 12),
+                        child: _CartItemTile(item: cart[i], index: i),
+                      )),
+                  const SizedBox(height: 20),
+                  _CustomerInfoForm(
+                    nameCtrl: _nameCtrl,
+                    phoneCtrl: _phoneCtrl,
+                  ),
+                  const SizedBox(height: 20),
+                ],
+              ),
             ),
       bottomNavigationBar: cart.isEmpty
           ? null
@@ -368,6 +401,110 @@ class _EmptyCart extends StatelessWidget {
             onPressed: () => context.go('/table/$tableId'),
           ),
         ],
+      ),
+    );
+  }
+}
+
+// ── Customer Info Form (Tên + SĐT) ─────────────────────────────────────────────
+
+class _CustomerInfoForm extends StatelessWidget {
+  final TextEditingController nameCtrl;
+  final TextEditingController phoneCtrl;
+
+  const _CustomerInfoForm({
+    required this.nameCtrl,
+    required this.phoneCtrl,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.04),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Icon(Icons.person_outline, color: primaryColor, size: 20),
+              const SizedBox(width: 8),
+              const Text(
+                'Thông tin liên hệ',
+                style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16),
+              ),
+              const SizedBox(width: 6),
+              Text('*',
+                  style: TextStyle(color: Colors.red.shade600, fontWeight: FontWeight.bold)),
+            ],
+          ),
+          const SizedBox(height: 4),
+          Text(
+            'Nhân viên cần để xác nhận đơn của bạn',
+            style: TextStyle(color: Colors.grey.shade600, fontSize: 12),
+          ),
+          const SizedBox(height: 14),
+          TextFormField(
+            controller: nameCtrl,
+            textCapitalization: TextCapitalization.words,
+            decoration: _decoration('Họ tên', Icons.badge_outlined),
+            validator: (v) =>
+                (v == null || v.trim().isEmpty) ? 'Vui lòng nhập họ tên' : null,
+          ),
+          const SizedBox(height: 12),
+          TextFormField(
+            controller: phoneCtrl,
+            keyboardType: TextInputType.phone,
+            inputFormatters: [
+              FilteringTextInputFormatter.digitsOnly,
+              LengthLimitingTextInputFormatter(15),
+            ],
+            decoration: _decoration('Số điện thoại', Icons.phone_outlined),
+            validator: (v) {
+              final t = v?.trim() ?? '';
+              if (t.isEmpty) return 'Vui lòng nhập số điện thoại';
+              if (t.length < 9) return 'Số điện thoại không hợp lệ';
+              return null;
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  InputDecoration _decoration(String hint, IconData icon) {
+    return InputDecoration(
+      hintText: hint,
+      hintStyle: TextStyle(color: Colors.grey.shade400),
+      prefixIcon: Icon(icon, color: Colors.grey.shade500, size: 20),
+      isDense: true,
+      filled: true,
+      fillColor: Colors.grey.shade50,
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: BorderSide(color: Colors.grey.shade200),
+      ),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: BorderSide(color: Colors.grey.shade200),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: const BorderSide(color: primaryColor, width: 1.5),
+      ),
+      errorBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: BorderSide(color: Colors.red.shade400),
       ),
     );
   }
