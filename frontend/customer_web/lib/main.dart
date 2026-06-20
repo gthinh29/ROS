@@ -3,10 +3,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_web_plugins/url_strategy.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'screens/menu_screen.dart';
-import 'screens/cart_screen.dart';
-import 'screens/order_tracking_screen.dart';
-import 'screens/error_screen.dart';
+
+import 'screens/reservation/home_screen.dart';
+import 'screens/reservation/otp_screen.dart';
+import 'screens/reservation/success_screen.dart';
 
 void main() {
   usePathUrlStrategy();
@@ -23,41 +23,30 @@ class CustomerApp extends StatelessWidget {
       routes: [
         GoRoute(
           path: '/',
+          builder: (context, state) => const HomeScreen(),
+        ),
+        GoRoute(
+          path: '/otp',
           builder: (context, state) {
-            final tableId = state.uri.queryParameters['tableId'];
-            if (tableId != null && tableId.isNotEmpty) {
-              return MenuScreen(tableId: tableId);
-            }
-            return const ErrorScreen();
+            final id = state.uri.queryParameters['id'] ?? '';
+            final email = state.uri.queryParameters['email'] ?? '';
+            return OtpScreen(reservationId: id, email: email);
           },
         ),
         GoRoute(
-          path: '/table/:tableId',
-          builder: (context, state) =>
-              MenuScreen(tableId: state.pathParameters['tableId'] ?? ''),
-        ),
-        GoRoute(
-          path: '/table/:tableId/cart',
-          builder: (context, state) =>
-              CartScreen(tableId: state.pathParameters['tableId'] ?? ''),
-        ),
-        GoRoute(
-          path: '/table/:tableId/tracking/:orderId',
-          builder: (context, state) => OrderTrackingScreen(
-            tableId: state.pathParameters['tableId']!,
-            orderId: state.pathParameters['orderId']!,
-          ),
+          path: '/success',
+          builder: (context, state) => const SuccessScreen(),
         ),
       ],
     );
 
     return MaterialApp.router(
-      title: 'Gọi món — Nhà hàng',
+      title: 'Đặt Bàn — ROS Restaurant',
       debugShowCheckedModeBanner: false,
       routerConfig: router,
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(
-          seedColor: const Color(0xFFE53935),
+          seedColor: const Color(0xFFE53935), // ROS Red
           brightness: Brightness.light,
         ),
         textTheme: GoogleFonts.beVietnamProTextTheme(),
@@ -66,7 +55,7 @@ class CustomerApp extends StatelessWidget {
           backgroundColor: Color(0xFFE53935),
           foregroundColor: Colors.white,
           elevation: 0,
-          centerTitle: false,
+          centerTitle: true,
         ),
         elevatedButtonTheme: ElevatedButtonThemeData(
           style: ElevatedButton.styleFrom(
@@ -75,12 +64,13 @@ class CustomerApp extends StatelessWidget {
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(12),
             ),
+            padding: const EdgeInsets.symmetric(vertical: 16),
+            textStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
           ),
         ),
         cardTheme: CardThemeData(
-          elevation: 0,
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          elevation: 2,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
           color: Colors.white,
         ),
       ),

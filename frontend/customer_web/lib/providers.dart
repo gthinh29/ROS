@@ -1,103 +1,77 @@
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:shared/models/cart_item.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:http/http.dart' as http;
+import 'package:shared/models/table.dart';
 
-// ── Cart state — dùng typed CartItem giống Internal Web ──────────────────────
+// Đổi base URL nếu chạy trên môi trường khác. 
+// Nếu chạy Docker cục bộ trên Windows, proxy Nginx gọi vào /api.
+// Ở Customer Web, chúng ta gọi trực tiếp /api/...
+const String baseUrl = '/api';
 
-class CartNotifier extends StateNotifier<List<CartItem>> {
-  CartNotifier() : super([]);
+// --- State Class cho Available Tables ---
+class AvailableTablesState {
+  final bool isLoading;
+  final List<TableModel> tables;
+  final String? error;
 
-  void addItem(CartItem newItem) {
-    // Nếu cùng món + variant + modifiers, tăng quantity
-    final idx = state.indexWhere((c) =>
-        c.menuItem.id == newItem.menuItem.id &&
-        c.selectedVariant?.id == newItem.selectedVariant?.id &&
-        _modifierKey(c) == _modifierKey(newItem));
-
-    if (idx != -1) {
-      final updated = List<CartItem>.from(state);
-      updated[idx].quantity += newItem.quantity;
-      state = updated;
-    } else {
-      state = [...state, newItem];
-    }
-  }
-
-  void updateQty(int index, int qty) {
-    final updated = List<CartItem>.from(state);
-    if (qty <= 0) {
-      updated.removeAt(index);
-    } else {
-      updated[index].quantity = qty;
-    }
-    state = updated;
-  }
-
-  void removeItem(int index) {
-    final updated = List<CartItem>.from(state);
-    updated.removeAt(index);
-    state = updated;
-  }
-
-  void clear() => state = [];
-
-  double get totalAmount =>
-      state.fold(0.0, (sum, item) => sum + item.totalPrice);
-
-  int get totalItems => state.fold(0, (sum, item) => sum + item.quantity);
-
-  String _modifierKey(CartItem item) =>
-      (item.selectedModifiers.map((m) => m.id).toList()..sort()).join(',');
+  AvailableTablesState({this.isLoading = false, this.tables = const [], this.error});
 }
 
-final cartProvider = StateNotifierProvider<CartNotifier, List<CartItem>>(
-  (ref) => CartNotifier(),
-);
+class AvailableTablesNotifier extends StateNotifier<AvailableTablesState> {
+  AvailableTablesNotifier() : super(AvailableTablesState());
 
-// ── Active Orders State ────────────────────────────────────────────────────────
-
-class ActiveOrdersNotifier extends StateNotifier<List<String>> {
-  ActiveOrdersNotifier() : super([]) {
-    _loadFromPrefs();
-  }
-
-  Future<void> _loadFromPrefs() async {
+  Future<void> fetchTables(String date, String time) async {
+    state = AvailableTablesState(isLoading: true);
     try {
-      final prefs = await SharedPreferences.getInstance();
-      final String? jsonStr = prefs.getString('active_order_ids');
-      if (jsonStr != null) {
-        final List<dynamic> decoded = jsonDecode(jsonStr);
-        state = decoded.cast<String>();
+      final response = await http.get(Uri.parse('$baseUrl/tables/available?date=$date&time=$time'));
+      if (response.statusCode == 200) {
+        final List data = jsonDecode(utf8.decode(response.bodyBytes));
+        final tables = data.map((t) => TableModel.fromJson(t)).toList();
+        state = AvailableTablesState(isLoading: false, tables: tables);
+      } else {
+        state = AvailableTablesState(error: 'Không thể lấy dữ liệu bàn.');
       }
     } catch (e) {
-      // ignore
-    }
-  }
-
-  Future<void> addOrder(String orderId) async {
-    if (!state.contains(orderId)) {
-      state = [...state, orderId];
-      _saveToPrefs();
-    }
-  }
-
-  Future<void> removeOrder(String orderId) async {
-    state = state.where((id) => id != orderId).toList();
-    _saveToPrefs();
-  }
-  
-  Future<void> _saveToPrefs() async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setString('active_order_ids', jsonEncode(state));
-    } catch (e) {
-      // ignore
+      state = AvailableTablesState(error: e.toString());
     }
   }
 }
 
-final activeOrdersProvider =
-    StateNotifierProvider<ActiveOrdersNotifier, List<String>>(
-  (ref) => ActiveOrdersNotifier(),
-);
+final availableTablesProvider = StateNotifierProvider<AvailableTablesNotifier, AvailableTablesState>((ref) {
+  return AvailableTablesNotifier();
+});
+
+// --- Service tạo Đặt bàn ---
+final reservationServiceProvider = Provider((ref) => ReservationService());
+
+class ReservationService {
+  Future<String?> createReservation(Map<String, dynamic> data) async {
+    try {
+      final response = await http.post(
+        Uri.parse('$baseUrl/reservations'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode(data),
+      );
+      if (response.statusCode == 201) {
+        final resData = jsonDecode(utf8.decode(response.bodyBytes))['data'];
+        return resData['id']; // Trả về reservation_id
+      }
+      return null;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  Future<bool> verifyOtp(String reservationId, String otpCode) async {
+    try {
+      final response = await http.post(
+        Uri.parse('$baseUrl/reservations/$reservationId/verify-otp'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({'otp_code': otpCode}),
+      );
+      return response.statusCode == 200;
+    } catch (e) {
+      return false;
+    }
+  }
+}
