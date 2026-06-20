@@ -6,7 +6,7 @@ from sqlalchemy.orm import Session
 
 from core.enums import TableStatus, ReservationStatus
 from modules.tables.models import Table
-from modules.tables.schemas import TableCreate
+from modules.tables.schemas import TableCreate, TableUpdate
 from modules.reservations.models import Reservation
 
 
@@ -17,11 +17,28 @@ def create_table(db: Session, table_in: TableCreate) -> Table:
         zone=table_in.zone,
         number=table_in.number,
         status=TableStatus.EMPTY,
+        capacity=table_in.capacity,
+        x_pos=table_in.x_pos,
+        y_pos=table_in.y_pos,
     )
     db.add(db_table)
     db.commit()
     db.refresh(db_table)
     return db_table
+
+def update_table(db: Session, table_id: uuid.UUID, data: TableUpdate) -> Table:
+    table = get_table(db, table_id)
+    if not table:
+        from fastapi import HTTPException
+        raise HTTPException(status_code=404, detail="Table not found")
+    
+    update_data = data.model_dump(exclude_unset=True)
+    for key, value in update_data.items():
+        setattr(table, key, value)
+        
+    db.commit()
+    db.refresh(table)
+    return table
 
 
 def get_tables(db: Session) -> List[Table]:

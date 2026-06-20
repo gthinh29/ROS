@@ -7,6 +7,7 @@ from sqlalchemy import (
     Enum,
     ForeignKey,
     Integer,
+    Float,
     String,
     Text,
     UniqueConstraint,
@@ -53,6 +54,9 @@ class Table(Base):
         Enum(TableStatus, name="tablestatus", create_constraint=True),
         default=TableStatus.EMPTY,
     )
+    capacity: Mapped[int] = mapped_column(Integer, default=4, nullable=False)
+    x_pos: Mapped[float] = mapped_column(Float, default=0.0, nullable=False)
+    y_pos: Mapped[float] = mapped_column(Float, default=0.0, nullable=False)
     created_at: Mapped[str] = mapped_column(
         DateTime(timezone=True), server_default=func.now()
     )

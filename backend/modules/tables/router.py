@@ -41,3 +41,13 @@ async def create_table(
 ):
     """Create a new table (Admin only)."""
     return services.create_table(db, table_in)
+
+@router.patch("/{table_id}", response_model=schemas.TableRead)
+async def update_table(
+    table_id: uuid.UUID,
+    data: schemas.TableUpdate,
+    db: Session = Depends(get_db),
+    current_user: dict = require_role(IS_ADMIN),
+):
+    """Update table capacity, positions, etc (Admin only)."""
+    return services.update_table(db, table_id, data)
