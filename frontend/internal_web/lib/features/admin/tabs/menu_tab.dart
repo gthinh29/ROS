@@ -22,7 +22,7 @@ class MenuTab extends ConsumerWidget {
       ),
       body: menuState.when(
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, _) => Center(child: Text('Lỗi: \$e')),
+        error: (e, _) => Center(child: Text('Lỗi: $e')),
         data: (items) {
           if (items.isEmpty) return const Center(child: Text('Chưa có món ăn nào.'));
           return LayoutBuilder(

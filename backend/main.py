@@ -3,7 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from core.config import settings
 from modules.auth.router import router as auth_router
-from modules.users.router import router as users_router
+from modules.auth.users import router as users_router
 from modules.billing.router import router as billing_router
 from modules.inventory.router import router as inventory_router
 from modules.kds.router import router as kds_router
@@ -28,14 +28,14 @@ app = FastAPI(
 # ── Register module routers ───────────────────────────────────────────
 app.include_router(auth_router)
 app.include_router(users_router)
-app.include_router(menu_router, prefix="/api")
+app.include_router(menu_router)
 app.include_router(inventory_router)
 app.include_router(tables_router)
 app.include_router(orders_router)
 app.include_router(kds_router)
 app.include_router(billing_router)
 app.include_router(reservations_router)
-app.include_router(analytics_router, prefix="/api")
+app.include_router(analytics_router)
 
 # ── Register middlewares ───────────────────────────────────────────
 app.add_middleware(JWTAuthenticationMiddleware)

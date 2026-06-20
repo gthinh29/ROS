@@ -18,7 +18,7 @@ class InventoryTab extends ConsumerWidget {
       ),
       body: state.when(
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, _) => Center(child: Text('Lỗi: \$e')),
+        error: (e, _) => Center(child: Text('Lỗi: $e')),
         data: (items) {
            if (items.isEmpty) return const Center(child: Text('Chưa có nguyên liệu nào.'));
            return LayoutBuilder(

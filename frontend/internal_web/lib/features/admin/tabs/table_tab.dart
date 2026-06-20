@@ -24,7 +24,7 @@ class TableTab extends ConsumerWidget {
       ),
       body: tableState.when(
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, _) => Center(child: Text('Lỗi: \$e')),
+        error: (e, _) => Center(child: Text('Lỗi: $e')),
         data: (tables) {
           if (tables.isEmpty) {
             return const Center(child: Text('Chưa có bàn nào.'));
