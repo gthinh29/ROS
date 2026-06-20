@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:shared/models/table.dart';
 
 class TableTile extends StatelessWidget {
@@ -109,6 +110,32 @@ class TableTile extends StatelessWidget {
                 ],
               ),
             ),
+            if (table.status == TableStatus.empty && table.upcomingReservationTime != null)
+              Positioned(
+                top: 8,
+                right: 8,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: Colors.red.shade600,
+                    borderRadius: BorderRadius.circular(8),
+                    boxShadow: [
+                      BoxShadow(color: Colors.black.withValues(alpha: 0.2), blurRadius: 4, offset: const Offset(0, 2))
+                    ],
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(Icons.timer, color: Colors.white, size: 12),
+                      const SizedBox(width: 4),
+                      Text(
+                        'Hẹn ${DateFormat('HH:mm').format(table.upcomingReservationTime!)}',
+                        style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
           ],
         ),
       ),
