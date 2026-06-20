@@ -1,0 +1,31 @@
+# Python cache
+__pycache__/
+*.py[cod]
+*.pyo
+.ruff_cache/
+
+# Virtual environment (never copy into image)
+venv/
+.venv/
+
+# Dev / test artifacts
+.env
+.env.*
+*.env
+
+# Editor & OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Git
+.git/
+.gitignore
+
+# Docker itself
+Dockerfile
+.dockerignore
+
+# Alembic dev scripts (schema already applied via migration)
+# (keep alembic/ so migrations can run inside container)

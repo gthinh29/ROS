@@ -1,0 +1,98 @@
+services:
+  # ─── PostgreSQL ──────────────────────────────────────────────────────────────
+  postgres:
+    image: postgres:16
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: restaurant_db
+      POSTGRES_USER: dev
+      POSTGRES_PASSWORD: devpassword
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"                   # expose for local dev / Alembic migrations
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U dev -d restaurant_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  # ─── FastAPI Backend ──────────────────────────────────────────────────────────
+  api:
+    build: ./backend
+    restart: unless-stopped
+    env_file:
+      - path: ./backend/.env.example
+        required: true
+      - path: ./backend/.env
+        required: false
+    environment:
+      DATABASE_URL: postgresql://dev:devpassword@postgres:5432/restaurant_db
+    expose:
+      - "8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - ./backend:/app
+      - /app/venv
+    healthcheck:
+      test: ["CMD-SHELL", "python -c \"import urllib.request; urllib.request.urlopen('http://localhost:8000/health')\" || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+
+  # ─── Customer Web (Flutter) ───────────────────────────────────────────────────
+  customer_web:
+    build:
+      context: ./frontend
+      dockerfile: ./customer_web/Dockerfile
+    restart: unless-stopped
+    expose:
+      - "80"
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1/ || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  # ─── Internal Web (Flutter) ──────────────────────────────────────────────────
+  internal_web:
+    build:
+      context: ./frontend
+      dockerfile: ./internal_web/Dockerfile
+    restart: unless-stopped
+    expose:
+      - "80"
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1/ || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  # ─── Nginx Reverse Proxy ─────────────────────────────────────────────────────
+  nginx:
+    image: nginx:1.25-alpine
+    restart: unless-stopped
+    ports:
+      - "80:80"                       # Customer Web → http://localhost/
+      - "8080:8080"                   # Internal Web → http://localhost:8080/
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      api:
+        condition: service_healthy
+      customer_web:
+        condition: service_healthy
+      internal_web:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1/nginx-health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+volumes:
+  postgres_data:
