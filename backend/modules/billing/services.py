@@ -10,6 +10,7 @@ from __future__ import annotations
 import uuid
 from datetime import datetime, timezone
 from decimal import ROUND_HALF_UP, Decimal
+from typing import cast
 
 from fastapi import HTTPException, status
 from sqlalchemy.orm import Session
@@ -75,7 +76,7 @@ async def create_bill(db: Session, payload: BillCreate) -> Bill:
     if not billable_items:
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
-            detail="Không có món ăn nào đã hoàn thành (READY/SERVED) để tính tiền.",
+            detail="Chưa có món nào được bưng (READY/SERVED) để tính tiền.",
         )
 
     subtotal = sum(Decimal(str(item.price)) * item.qty for item in billable_items)
@@ -86,10 +87,10 @@ async def create_bill(db: Session, payload: BillCreate) -> Bill:
     total = subtotal + tax + service_fee
 
     if existing:
-        existing.subtotal = float(subtotal)
-        existing.tax = float(tax)
-        existing.service_fee = float(service_fee)
-        existing.total = float(total)
+        existing.subtotal = float(subtotal)  # type: ignore[assignment]
+        existing.tax = float(tax)  # type: ignore[assignment]
+        existing.service_fee = float(service_fee)  # type: ignore[assignment]
+        existing.total = float(total)  # type: ignore[assignment]
         db.commit()
         db.refresh(existing)
         return existing
@@ -166,7 +167,7 @@ async def checkout(db: Session, payload: CheckoutRequest) -> CheckoutResponse:
     bill.payment_method = payload.payment_method
     bill.paid_amount = float(paid_amount)
     bill.change_amount = float(change)
-    bill.paid_at = datetime.now(timezone.utc)
+    bill.paid_at = cast(str, datetime.now(timezone.utc))  # type: ignore[assignment]
 
     # Close order + tự động hủy món chưa xong
     order: Order | None = db.get(Order, bill.order_id)
@@ -187,7 +188,7 @@ async def checkout(db: Session, payload: CheckoutRequest) -> CheckoutResponse:
 
     db.commit()
 
-    # ── Broadcast POS event ────────────────────────────
+    # ── Broadcast POS event + TABLE_CLEARED to waiter ─────────
     try:
         from core.ws_manager import kds_manager
         import asyncio
@@ -197,18 +198,24 @@ async def checkout(db: Session, payload: CheckoutRequest) -> CheckoutResponse:
                 "table_id": str(order.table_id),
                 "status": TableStatus.EMPTY.value
             }))
+            # Notify waiter to clear all ready items for this table
+            asyncio.create_task(kds_manager.broadcast_staff_event({
+                "event": "TABLE_CLEARED",
+                "table_id": str(order.table_id),
+                "table_number": table_number,
+            }))
     except Exception:
         pass
 
     return CheckoutResponse(
-        bill_id=bill.id,
-        order_id=order.id if order else bill.order_id,
+        bill_id=bill.id,  # type: ignore[arg-type]
+        order_id=(order.id if order else bill.order_id),  # type: ignore[arg-type]
         status=BillStatus.PAID,
         payment_method=payload.payment_method,
         paid_amount=float(paid_amount),
         change_amount=float(change),
-        customer_name=order.customer_name if order else None,
-        phone=order.phone if order else None,
+        customer_name=order.customer_name if order else None,  # type: ignore[arg-type]
+        phone=order.phone if order else None,  # type: ignore[arg-type]
         table_number=table_number,
         message="Thanh toán thành công. Bàn đã sẵn sàng đón khách mới.",
     )

@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import uuid
 from decimal import Decimal
+from typing import cast
 
 from fastapi import HTTPException, status
 from sqlalchemy import select
@@ -96,14 +97,17 @@ def _check_and_lock_inventory(
     ingredient_ids = [row.ingredient_id for row in bom_rows]
 
     # Lock rows — prevents concurrent requests from reading stale stock
-    locked_ingredients: list[Ingredient] = (
-        db.execute(
-            select(Ingredient)
-            .where(Ingredient.id.in_(ingredient_ids))
-            .with_for_update()
-        )
-        .scalars()
-        .all()
+    locked_ingredients = cast(
+        list[Ingredient],
+        list(
+            db.execute(
+                select(Ingredient)
+                .where(Ingredient.id.in_(ingredient_ids))
+                .with_for_update()
+            )
+            .scalars()
+            .all()
+        ),
     )
     ing_map = {ing.id: ing for ing in locked_ingredients}
 
@@ -136,14 +140,17 @@ def _deduct_inventory_for_served_item(db: Session, order: Order, item: OrderItem
         return
 
     ingredient_ids = [row.ingredient_id for row in bom_rows]
-    locked_ingredients: list[Ingredient] = (
-        db.execute(
-            select(Ingredient)
-            .where(Ingredient.id.in_(ingredient_ids))
-            .with_for_update()
-        )
-        .scalars()
-        .all()
+    locked_ingredients = cast(
+        list[Ingredient],
+        list(
+            db.execute(
+                select(Ingredient)
+                .where(Ingredient.id.in_(ingredient_ids))
+                .with_for_update()
+            )
+            .scalars()
+            .all()
+        ),
     )
     ingredient_map = {ing.id: ing for ing in locked_ingredients}
 
@@ -159,7 +166,7 @@ def _deduct_inventory_for_served_item(db: Session, order: Order, item: OrderItem
                 detail=f"Not enough '{ingredient.name}' to serve item: need {required}{ingredient.unit}, have {ingredient.stock_qty}{ingredient.unit}",
             )
 
-        ingredient.stock_qty = Decimal(str(ingredient.stock_qty)) - required
+        ingredient.stock_qty = cast(float, Decimal(str(ingredient.stock_qty)) - required)
         db.add(InventoryLog(
             ingredient_id=ingredient.id,
             delta=-required,
@@ -190,10 +197,10 @@ async def create_order(db: Session, request: OrderCreate) -> Order:
         item_price = Decimal(str(menu_item.base_price))
 
         if item_req.variant_id:
-            variant = _get_variant(db, item_req.variant_id, menu_item.id)
+            variant = _get_variant(db, item_req.variant_id, cast(uuid.UUID, menu_item.id))
             item_price += Decimal(str(variant.extra_price))
 
-        modifiers = _get_modifiers(db, item_req.modifier_ids, menu_item.id)
+        modifiers = _get_modifiers(db, item_req.modifier_ids, cast(uuid.UUID, menu_item.id))
         modifier_extra = sum(Decimal(str(m.extra_price)) for m in modifiers)
         item_price += modifier_extra
 
@@ -217,16 +224,31 @@ async def create_order(db: Session, request: OrderCreate) -> Order:
         )
 
     # ── Phase 3: persist Order ─────────────────────────────────
-    order = Order(
-        table_id=request.table_id,
-        reservation_id=request.reservation_id,
-        customer_name=request.customer_name,
-        phone=request.phone,
-        type=request.type,
-        status=OrderStatus.PENDING,
-        total=float(order_total),
-    )
-    db.add(order)
+    order = None
+    if request.table_id:
+        order = db.query(Order).filter(
+            Order.table_id == request.table_id, 
+            Order.status != OrderStatus.COMPLETED
+        ).first()
+
+    if not order:
+        order = Order(
+            table_id=request.table_id,
+            reservation_id=request.reservation_id,
+            customer_name=request.customer_name,
+            phone=request.phone,
+            type=request.type,
+            status=OrderStatus.PENDING,
+            total=float(order_total),
+        )
+        db.add(order)
+    else:
+        order.total = float(str(order.total)) + float(order_total)
+        if request.customer_name and not order.customer_name:
+            order.customer_name = request.customer_name
+        if request.phone and not order.phone:
+            order.phone = request.phone
+
     db.flush()  # get order.id without committing
 
     kds_events: list[dict] = []
@@ -253,6 +275,7 @@ async def create_order(db: Session, request: OrderCreate) -> Order:
         kds_events.append({
             "order_item_id": str(order_item.id),
             "order_id": str(order.id),
+            "menu_item_id": str(payload["menu_item"].id),
             "menu_item_name": payload["menu_item"].name,
             "variant_name": payload["variant"].name if payload["variant"] else None,
             "modifier_names": [m.name for m in payload["modifiers"]],
@@ -261,11 +284,12 @@ async def create_order(db: Session, request: OrderCreate) -> Order:
             "table_id": str(request.table_id) if request.table_id else None,
             "table_number": str(table.number) if table else None,
             "zone": payload["menu_item"].kds_zone,
+            "created_at": order_item.created_at.isoformat() if order_item.created_at else None,
         })
 
     # ── Phase 4: update table status ──────────────────────────
-    if table and table.status == TableStatus.EMPTY:
-        table.status = TableStatus.OCCUPIED
+    if table and cast(TableStatus, table.status) == TableStatus.EMPTY:
+        table.status = cast(TableStatus, TableStatus.OCCUPIED)
 
     db.commit()
     db.refresh(order)
@@ -323,12 +347,52 @@ async def get_order_tracking(db: Session, order_id: uuid.UUID) -> dict:
 
 
 
-async def list_orders_by_table(db: Session, table_id: uuid.UUID) -> list[Order]:
-    return (
+async def list_orders_by_table(db: Session, table_id: uuid.UUID) -> list[dict]:
+    """Trả về các đơn hàng đang hoạt động của bàn, kèm menu_item_name + variant_name."""
+    from modules.menu.models import MenuItem, Variant
+
+    orders = (
         db.query(Order)
         .filter(Order.table_id == table_id, Order.status != OrderStatus.COMPLETED)
         .all()
     )
+
+    result = []
+    for order in orders:
+        items_out = []
+        for item in order.items:
+            menu_item = db.get(MenuItem, item.menu_item_id)
+            variant = db.get(Variant, item.variant_id) if item.variant_id else None
+            items_out.append({
+                "id": str(item.id),
+                "order_id": str(order.id),
+                "menu_item_id": str(item.menu_item_id),
+                "menu_item_name": menu_item.name if menu_item else "Unknown",
+                "variant_id": str(item.variant_id) if item.variant_id else None,
+                "variant_name": variant.name if variant else None,
+                "qty": item.qty,
+                "price": float(item.price),
+                "note": item.note,
+                "status": item.status.value,
+                "created_at": item.created_at.isoformat() if hasattr(item, "created_at") and item.created_at else None,
+                "modifiers": [
+                    {"id": str(m.id), "modifier_id": str(m.modifier_id), "price": float(m.price)}
+                    for m in item.modifiers
+                ],
+            })
+        result.append({
+            "id": str(order.id),
+            "table_id": str(order.table_id) if order.table_id else None,
+            "reservation_id": str(order.reservation_id) if order.reservation_id else None,
+            "customer_name": order.customer_name,
+            "phone": order.phone,
+            "type": order.type.value,
+            "status": order.status.value,
+            "total": cast(float, order.total),
+            "items": items_out,
+        })
+    return result
+
 
 
 async def update_item_status(
@@ -342,7 +406,7 @@ async def update_item_status(
     if not item or item.order_id != order_id:
         raise HTTPException(status_code=404, detail="Order item not found")
 
-    allowed = _ALLOWED_TRANSITIONS.get(item.status, [])
+    allowed = _ALLOWED_TRANSITIONS.get(cast(OrderItemStatus, item.status), [])
     if payload.status not in allowed:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -360,21 +424,34 @@ async def update_item_status(
         from core.ws_manager import kds_manager
         import asyncio
         menu_item = db.get(MenuItem, item.menu_item_id)
+        from modules.tables.models import Table
+        table = db.get(Table, order.table_id) if order.table_id else None
 
         # ── Broadcast trạng thái mới lên KDS realtime ────────────
         asyncio.create_task(kds_manager.broadcast_to_zone(
-            menu_item.kds_zone if menu_item else "kitchen",
+            cast(str, menu_item.kds_zone) if menu_item else "kitchen",
             {
                 "event": "item_status_updated",
                 "item_id": str(item.id),
+                "order_id": str(order.id),
                 "status": payload.status.value,
+                "table_id": str(order.table_id) if order.table_id else None,
             }
         ))
 
-        # ── Thông báo cho Waiter khi món READY ────────────────────
+        # ── Broadcast lên staff channel (waiter progress tab) ─────
+        # Gửi tất cả status changes (không chỉ READY) để tab tiến trình tự refresh
+        asyncio.create_task(kds_manager.broadcast_staff_event({
+            "event": "item_status_updated",
+            "item_id": str(item.id),
+            "order_id": str(order.id),
+            "status": payload.status.value,
+            "table_id": str(order.table_id) if order.table_id else None,
+            "table_number": str(table.number) if table else None,
+        }))
+
+        # ── Thông báo riêng cho Waiter khi món READY ─────────────
         if payload.status == OrderItemStatus.READY:
-            from modules.tables.models import Table
-            table = db.get(Table, order.table_id) if order.table_id else None
             asyncio.create_task(kds_manager.broadcast_staff_event({
                 "event": "ITEM_READY",
                 "table_id": str(order.table_id) if order.table_id else None,
@@ -404,12 +481,12 @@ async def cancel_pending_items_for_order(db: Session, order: Order) -> None:
         OrderItemStatus.READY,
     }
 
-    for item in order.items:
-        if item.status in pending_statuses:
-            item.status = OrderItemStatus.CANCELLED
+    for item in cast(list[OrderItem], order.items):
+        if cast(OrderItemStatus, item.status) in pending_statuses:
+            item.status = cast(OrderItemStatus, OrderItemStatus.CANCELLED)
             if kds_manager:
                 menu_item = db.get(MenuItem, item.menu_item_id)
-                zone = menu_item.kds_zone if menu_item else "kitchen"
+                zone: str = cast(str, menu_item.kds_zone) if menu_item else "kitchen"
                 asyncio.create_task(kds_manager.broadcast_to_zone(
                     zone,
                     {
@@ -449,6 +526,7 @@ async def get_active_kds_items(db: Session, zone: str) -> list[dict]:
             "id": str(order_item.id),
             "order_item_id": str(order_item.id),
             "order_id": str(order.id),
+            "menu_item_id": str(menu_item.id),
             "menu_item_name": menu_item.name,
             "variant_name": variant.name if variant else None,
             "modifier_names": [m.name for m in modifiers],
@@ -458,5 +536,30 @@ async def get_active_kds_items(db: Session, zone: str) -> list[dict]:
             "table_number": str(table.number) if table else None,
             "zone": menu_item.kds_zone,
             "status": order_item.status.value,
+            "created_at": order_item.created_at.isoformat() if order_item.created_at else None,
+        })
+    return result
+
+
+async def get_ready_items(db: Session) -> list[dict]:
+    """Lấy tất cả order items đang READY để waiter load lúc khởi động."""
+    from modules.tables.models import Table
+    items = (
+        db.query(OrderItem, Order, MenuItem, Variant, Table)
+        .join(Order, Order.id == OrderItem.order_id)
+        .join(MenuItem, MenuItem.id == OrderItem.menu_item_id)
+        .outerjoin(Variant, Variant.id == OrderItem.variant_id)
+        .outerjoin(Table, Table.id == Order.table_id)
+        .filter(OrderItem.status == OrderItemStatus.READY)
+        .all()
+    )
+
+    result = []
+    for order_item, order, menu_item, variant, table in items:
+        result.append({
+            "item_id": str(order_item.id),
+            "order_id": str(order.id),
+            "menu_item_name": menu_item.name,
+            "table_number": str(table.number) if table else "?",
         })
     return result

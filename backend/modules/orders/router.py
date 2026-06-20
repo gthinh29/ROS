@@ -32,15 +32,41 @@ async def create_order(
     return ResponseWrapper.success_response(result)
 
 
-@router.get("/{order_id}", response_model=ResponseWrapper[OrderRead], response_model_exclude_none=True)
-async def get_order(
-    order_id: uuid.UUID,
+@router.get("", response_model=ResponseWrapper[list[dict]], response_model_exclude_none=True)
+async def list_orders_by_table(
+    table_id: uuid.UUID,
     db: Session = Depends(get_db),
     current_user: dict = require_role(IS_STAFF),
 ):
-    """Get a single order by ID."""
-    result = await services.get_order(db, order_id)
+    """List active orders for a specific table."""
+    result = await services.list_orders_by_table(db, table_id)
     return ResponseWrapper.success_response(result)
+
+
+# ── Static routes MUST come before dynamic /{order_id} to avoid UUID parse conflict ──
+
+@router.get("/kds/items", response_model=ResponseWrapper[list[dict]], response_model_exclude_none=True)
+async def get_active_kds_items(
+    zone: str = "kitchen",
+    db: Session = Depends(get_db),
+    current_user: dict = require_role(IS_KITCHEN_OR_WAITER),
+):
+    """Fetch all active pending/preparing items for KDS."""
+    result = await services.get_active_kds_items(db, zone)
+    return ResponseWrapper.success_response(result)
+
+
+@router.get("/ready-items", response_model=ResponseWrapper[list[dict]], response_model_exclude_none=True)
+async def get_ready_items(
+    db: Session = Depends(get_db),
+    current_user: dict = require_role(IS_KITCHEN_OR_WAITER),
+):
+    """Fetch all order items with status READY — for waiter to load on startup."""
+    result = await services.get_ready_items(db)
+    return ResponseWrapper.success_response(result)
+
+
+# ── Dynamic routes (must come after static ones) ─────────────────────────────
 
 @router.get("/{order_id}/tracking", response_model=ResponseWrapper[OrderTrackingRead], response_model_exclude_none=True)
 async def get_order_tracking(
@@ -52,14 +78,14 @@ async def get_order_tracking(
     return ResponseWrapper.success_response(result)
 
 
-@router.get("", response_model=ResponseWrapper[list[OrderRead]], response_model_exclude_none=True)
-async def list_orders_by_table(
-    table_id: uuid.UUID,
+@router.get("/{order_id}", response_model=ResponseWrapper[OrderRead], response_model_exclude_none=True)
+async def get_order(
+    order_id: uuid.UUID,
     db: Session = Depends(get_db),
     current_user: dict = require_role(IS_STAFF),
 ):
-    """List active orders for a specific table."""
-    result = await services.list_orders_by_table(db, table_id)
+    """Get a single order by ID."""
+    result = await services.get_order(db, order_id)
     return ResponseWrapper.success_response(result)
 
 
@@ -81,14 +107,3 @@ async def update_item_status(
     """
     await services.update_item_status(db, order_id, item_id, payload)
     return ResponseWrapper.success_response({"message": "Item status updated"})
-
-
-@router.get("/kds/items", response_model=ResponseWrapper[list[dict]], response_model_exclude_none=True)
-async def get_active_kds_items(
-    zone: str = "kitchen",
-    db: Session = Depends(get_db),
-    current_user: dict = require_role(IS_KITCHEN_OR_WAITER),
-):
-    """Fetch all active pending/preparing items for KDS."""
-    result = await services.get_active_kds_items(db, zone)
-    return ResponseWrapper.success_response(result)

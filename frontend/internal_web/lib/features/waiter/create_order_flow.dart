@@ -7,6 +7,8 @@ import 'package:shared/models/cart_item.dart';
 import 'menu_provider.dart';
 import 'cart_provider.dart';
 import 'order_progress_provider.dart';
+import 'waiter_notification_provider.dart'; // progressRefreshProvider
+
 
 class CreateOrderFlow extends ConsumerStatefulWidget {
   final String? tableNumber;
@@ -394,66 +396,185 @@ class _OrderTab extends ConsumerWidget {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Tab 2: Tiến Trình Đơn
+// Tab 2: Tiến Trình Đơn — Realtime với WS + polling fallback
 // ─────────────────────────────────────────────────────────────────────────────
 
-class _ProgressTab extends ConsumerWidget {
+class _ProgressTab extends ConsumerStatefulWidget {
   final String tableId;
   final String tableLabel;
   const _ProgressTab({required this.tableId, required this.tableLabel});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final progressAsync = ref.watch(orderProgressProvider(tableId));
+  ConsumerState<_ProgressTab> createState() => _ProgressTabState();
+}
 
-    return RefreshIndicator(
-      onRefresh: () async =>
-          ref.invalidate(orderProgressProvider(tableId)),
-      child: progressAsync.when(
-        data: (items) {
-          if (items.isEmpty) {
-            return const Center(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(Icons.receipt_long, size: 48, color: Colors.grey),
-                  SizedBox(height: 8),
-                  Text('Chưa có món nào trong đơn này.',
-                      style: TextStyle(color: Colors.grey)),
-                ],
-              ),
-            );
-          }
-          return ListView.separated(
-            padding: const EdgeInsets.all(16),
-            itemCount: items.length,
-            separatorBuilder: (_, _) =>
-                Divider(height: 1, color: Colors.grey.shade200),
-            itemBuilder: (ctx, index) {
-              return _ProgressItemTile(item: items[index]);
-            },
-          );
-        },
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, st) => Center(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
+class _ProgressTabState extends ConsumerState<_ProgressTab> {
+  DateTime? _lastUpdated;
+
+  @override
+  void initState() {
+    super.initState();
+    // Polling fallback: 20s refresh nếu WS không hoạt động
+    Future.delayed(Duration.zero, _startPolling);
+  }
+
+  void _startPolling() {
+    if (!mounted) return;
+    Future.delayed(const Duration(seconds: 20), () {
+      if (!mounted) return;
+      ref.invalidate(orderProgressProvider(widget.tableId));
+      setState(() => _lastUpdated = DateTime.now());
+      _startPolling(); // lặp lại
+    });
+  }
+
+  void _refresh() {
+    ref.invalidate(orderProgressProvider(widget.tableId));
+    setState(() => _lastUpdated = DateTime.now());
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    // Lắng nghe WS refresh trigger → invalidate ngay khi có event
+    ref.listen<int>(progressRefreshProvider, (prev, next) {
+      ref.invalidate(orderProgressProvider(widget.tableId));
+      if (mounted) setState(() => _lastUpdated = DateTime.now());
+    });
+
+    final progressAsync = ref.watch(orderProgressProvider(widget.tableId));
+
+    return Column(
+      children: [
+        // ── Status bar ─────────────────────────────────────────
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          color: Colors.indigo.shade50,
+          child: Row(
             children: [
-              const Icon(Icons.error_outline, color: Colors.red, size: 40),
-              const SizedBox(height: 8),
-              Text('Lỗi: $e'),
-              const SizedBox(height: 8),
-              ElevatedButton(
-                onPressed: () => ref.invalidate(orderProgressProvider(tableId)),
-                child: const Text('Thử lại'),
+              Icon(Icons.sync, size: 14, color: Colors.indigo.shade400),
+              const SizedBox(width: 6),
+              Text(
+                _lastUpdated != null
+                    ? 'Cập nhật lúc ${_lastUpdated!.hour.toString().padLeft(2, "0")}:${_lastUpdated!.minute.toString().padLeft(2, "0")}:${_lastUpdated!.second.toString().padLeft(2, "0")}'
+                    : 'Tự động cập nhật realtime',
+                style: TextStyle(fontSize: 11, color: Colors.indigo.shade400),
+              ),
+              const Spacer(),
+              GestureDetector(
+                onTap: _refresh,
+                child: Icon(Icons.refresh, size: 18, color: Colors.indigo.shade400),
               ),
             ],
           ),
         ),
+
+        // ── Content ────────────────────────────────────────────
+        Expanded(
+          child: RefreshIndicator(
+            onRefresh: () async => _refresh(),
+            child: progressAsync.when(
+              data: (items) {
+                if (items.isEmpty) {
+                  return ListView( // wrap in ListView để RefreshIndicator hoạt động
+                    children: [
+                      SizedBox(height: MediaQuery.of(context).size.height * 0.25),
+                      const Center(
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(Icons.check_circle_outline, size: 56, color: Colors.green),
+                            SizedBox(height: 12),
+                            Text(
+                              'Bàn này chưa có đơn\nhoặc đã được dọn sạch.',
+                              textAlign: TextAlign.center,
+                              style: TextStyle(color: Colors.grey, fontSize: 15),
+                            ),
+                            SizedBox(height: 6),
+                            Text(
+                              'Kéo xuống để làm mới.',
+                              style: TextStyle(color: Colors.grey, fontSize: 12),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  );
+                }
+
+                // Nhóm theo trạng thái để dễ nhìn
+                final active = items.where((i) =>
+                    i.status == OrderItemStatus.pending ||
+                    i.status == OrderItemStatus.preparing).toList();
+                final ready = items.where((i) => i.status == OrderItemStatus.ready).toList();
+                final done = items.where((i) =>
+                    i.status == OrderItemStatus.served ||
+                    i.status == OrderItemStatus.cancelled).toList();
+
+                return ListView(
+                  padding: const EdgeInsets.all(12),
+                  children: [
+                    if (active.isNotEmpty) ...[
+                      _sectionHeader('🍳 ĐANG CHẾ BIẾN', Colors.orange.shade700, active.length),
+                      ...active.map((i) => _ProgressItemTile(item: i)),
+                      const SizedBox(height: 8),
+                    ],
+                    if (ready.isNotEmpty) ...[
+                      _sectionHeader('✅ SẴN SÀNG BƯNG', Colors.green.shade700, ready.length),
+                      ...ready.map((i) => _ProgressItemTile(item: i)),
+                      const SizedBox(height: 8),
+                    ],
+                    if (done.isNotEmpty) ...[
+                      _sectionHeader('📋 ĐÃ XONG', Colors.grey.shade600, done.length),
+                      ...done.map((i) => _ProgressItemTile(item: i)),
+                    ],
+                  ],
+                );
+              },
+              loading: () => const Center(child: CircularProgressIndicator()),
+              error: (e, st) => Center(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(Icons.error_outline, color: Colors.red, size: 40),
+                    const SizedBox(height: 8),
+                    Text('Lỗi: $e'),
+                    const SizedBox(height: 8),
+                    ElevatedButton(
+                      onPressed: _refresh,
+                      child: const Text('Thử lại'),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _sectionHeader(String title, Color color, int count) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 6, top: 2),
+      child: Row(
+        children: [
+          Text(title, style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: color)),
+          const SizedBox(width: 6),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+            decoration: BoxDecoration(
+              color: color.withValues(alpha: 0.15),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Text('$count', style: TextStyle(fontSize: 11, color: color, fontWeight: FontWeight.bold)),
+          ),
+        ],
       ),
     );
   }
 }
+
+
 
 class _ProgressItemTile extends StatelessWidget {
   final OrderItemModel item;

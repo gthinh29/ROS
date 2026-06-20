@@ -11,7 +11,7 @@ import 'features/waiter/waiter_screen.dart';
 import 'features/admin/admin_screen.dart';
 
 final routerProvider = Provider<GoRouter>((ref) {
-  return GoRouter(
+  final router = GoRouter(
     initialLocation: '/',
     redirect: (context, state) {
       final authState = ref.read(authProvider);
@@ -69,4 +69,12 @@ final routerProvider = Provider<GoRouter>((ref) {
       ),
     ],
   );
+
+  ref.listen(authProvider, (previous, next) {
+    if (previous?.user != next.user) {
+      router.refresh();
+    }
+  });
+
+  return router;
 });

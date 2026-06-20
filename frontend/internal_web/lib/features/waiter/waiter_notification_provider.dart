@@ -62,6 +62,11 @@ class ReadyItemsNotifier extends Notifier<List<ReadyItem>> {
     state = state.where((e) => e.itemId != itemId).toList();
   }
 
+  /// Xóa tất cả items của một bàn (khi dọn bàn / checkout)
+  void clearTable(String tableNumber) {
+    state = state.where((e) => e.tableNumber != tableNumber).toList();
+  }
+
   Future<bool> markServed(String orderId, String itemId) async {
     // Đánh dấu loading
     state = state
@@ -105,6 +110,19 @@ class ReadyItemsNotifier extends Notifier<List<ReadyItem>> {
 final readyItemsProvider =
     NotifierProvider<ReadyItemsNotifier, List<ReadyItem>>(ReadyItemsNotifier.new);
 
+// ─── Progress Refresh Trigger (realtime for progress tab) ───────────────────
+
+/// Tăng counter mỗi khi có item_status_updated / TABLE_CLEARED
+/// để _ProgressTab tự invalidate orderProgressProvider
+class ProgressRefreshNotifier extends Notifier<int> {
+  @override
+  int build() => 0;
+  void trigger() => state = state + 1;
+}
+
+final progressRefreshProvider =
+    NotifierProvider<ProgressRefreshNotifier, int>(ProgressRefreshNotifier.new);
+
 // ─── Notification Provider (WS Listener) ────────────────────────────────────
 
 class WaiterNotificationNotifier extends Notifier<WaiterNotification?> {
@@ -112,12 +130,32 @@ class WaiterNotificationNotifier extends Notifier<WaiterNotification?> {
 
   @override
   WaiterNotification? build() {
-    final user = ref.read(authProvider).user;
+    final user = ref.watch(authProvider).user;
     if (user != null && user.role.name.toUpperCase() == 'WAITER') {
       _connectWebSocket(user.id);
+      // Load các món READY hiện có trong DB (trường hợp đăng nhập lại / refresh)
+      Future.microtask(() => _loadReadyItems());
     }
     ref.onDispose(() => _channel?.sink.close());
     return null;
+  }
+
+  Future<void> _loadReadyItems() async {
+    try {
+      final res = await apiClient.get('/orders/ready-items');
+      final List<dynamic> items = res.data['data'] ?? [];
+      for (final item in items) {
+        ref.read(readyItemsProvider.notifier).addItem(ReadyItem(
+          itemId: item['item_id'] as String,
+          orderId: item['order_id'] as String,
+          tableNumber: item['table_number']?.toString() ?? '?',
+          menuItemName: item['menu_item_name']?.toString() ?? 'Món ăn',
+        ));
+      }
+      debugPrint('WAITER: Loaded ${items.length} READY items from DB');
+    } catch (e) {
+      debugPrint('WAITER: Failed to load ready items: $e');
+    }
   }
 
   void _connectWebSocket(String userId) {
@@ -159,6 +197,14 @@ class WaiterNotificationNotifier extends Notifier<WaiterNotification?> {
                   menuItemName: itemName,
                 ));
               }
+
+              // 3. Trigger progress tab refresh
+              ref.read(progressRefreshProvider.notifier).trigger();
+
+            } else if (event == 'item_status_updated') {
+              // KDS cập nhật trạng thái → refresh progress tab
+              ref.read(progressRefreshProvider.notifier).trigger();
+
             } else if (event == 'CALL_WAITER') {
               final tableNum = data['table_number']?.toString() ?? '?';
               state = WaiterNotification(
@@ -166,12 +212,22 @@ class WaiterNotificationNotifier extends Notifier<WaiterNotification?> {
                 title: '🔔 Gọi Phục Vụ',
                 body: 'Bàn $tableNum đang gọi.',
               );
+
             } else if (event == 'CANCELLED') {
-              // Xóa khỏi danh sách nếu món bị hủy
+              // Xóa khỏi danh sách nếu món bị hủy lẻ
               final itemId = data['item_id']?.toString();
               if (itemId != null) {
                 ref.read(readyItemsProvider.notifier).removeItem(itemId);
               }
+              ref.read(progressRefreshProvider.notifier).trigger();
+
+            } else if (event == 'TABLE_CLEARED') {
+              // Dọn bàn → xóa tất cả ready items của bàn đó
+              final tableNum = data['table_number']?.toString();
+              if (tableNum != null) {
+                ref.read(readyItemsProvider.notifier).clearTable(tableNum);
+              }
+              ref.read(progressRefreshProvider.notifier).trigger();
             }
           } catch (e) {
             debugPrint('WAITER WS JSON Error: $e');

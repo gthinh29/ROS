@@ -48,13 +48,17 @@ class OrderModifierRead(BaseModel):
 
 class OrderItemRead(BaseModel):
     id: uuid.UUID
+    order_id: Optional[uuid.UUID] = None
     menu_item_id: uuid.UUID
-    variant_id: Optional[uuid.UUID]
+    menu_item_name: Optional[str] = None  # Resolved by service layer
+    variant_id: Optional[uuid.UUID] = None
+    variant_name: Optional[str] = None    # Resolved by service layer
     qty: int
     price: float
-    note: Optional[str]
+    note: Optional[str] = None
     status: OrderItemStatus
     modifiers: List[OrderModifierRead] = []
+    created_at: Optional[str] = None
 
     model_config = {"from_attributes": True}
 

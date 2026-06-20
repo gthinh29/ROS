@@ -1,3 +1,4 @@
+import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared/models/billing.dart';
 import 'package:shared/core/api_client.dart';
@@ -45,12 +46,19 @@ class BillingNotifier extends Notifier<void> {
       ref.read(currentBillProvider.notifier).setBill(BillModel.fromJson(billData));
 
     } catch (e) {
-      // Lấy message từ backend nếu có
       String errMsg = e.toString();
-      try {
-        final dioErr = e as dynamic;
-        errMsg = dioErr.response?.data?['detail'] ?? errMsg;
-      } catch (_) {}
+      if (e is DioException) {
+        final data = e.response?.data;
+        if (data is Map) {
+          if (data['error'] is Map && data['error']['message'] != null) {
+            errMsg = data['error']['message'].toString();
+          } else if (data['detail'] != null) {
+            errMsg = data['detail'].toString();
+          }
+        } else if (data is String) {
+          errMsg = data;
+        }
+      }
       ref.read(billingErrorProvider.notifier).setError(errMsg);
     }
   }
@@ -78,10 +86,18 @@ class BillingNotifier extends Notifier<void> {
       return CheckoutReceiptData.fromJson(resData);
     } catch (e) {
       String errMsg = e.toString();
-      try {
-        final dioErr = e as dynamic;
-        errMsg = dioErr.response?.data?['detail'] ?? errMsg;
-      } catch (_) {}
+      if (e is DioException) {
+        final data = e.response?.data;
+        if (data is Map) {
+          if (data['error'] is Map && data['error']['message'] != null) {
+            errMsg = data['error']['message'].toString();
+          } else if (data['detail'] != null) {
+            errMsg = data['detail'].toString();
+          }
+        } else if (data is String) {
+          errMsg = data;
+        }
+      }
       ref.read(billingErrorProvider.notifier).setError(errMsg);
       return null;
     }
@@ -97,10 +113,18 @@ class BillingNotifier extends Notifier<void> {
       return SplitBillResponse.fromJson(data);
     } catch (e) {
       String errMsg = e.toString();
-      try {
-        final dioErr = e as dynamic;
-        errMsg = dioErr.response?.data?['detail'] ?? errMsg;
-      } catch (_) {}
+      if (e is DioException) {
+        final data = e.response?.data;
+        if (data is Map) {
+          if (data['error'] is Map && data['error']['message'] != null) {
+            errMsg = data['error']['message'].toString();
+          } else if (data['detail'] != null) {
+            errMsg = data['detail'].toString();
+          }
+        } else if (data is String) {
+          errMsg = data;
+        }
+      }
       ref.read(billingErrorProvider.notifier).setError(errMsg);
       return null;
     }

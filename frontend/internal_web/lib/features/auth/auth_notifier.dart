@@ -27,7 +27,28 @@ class AuthNotifier extends Notifier<AuthState> {
   }
 
   Future<void> _checkToken() async {
-    // Basic mock logic. Real app connects to `/users/me` if token exists.
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('access_token');
+    final email = prefs.getString('user_email');
+    
+    if (token != null && email != null) {
+      final user = User(
+        id: 'real',
+        email: email,
+        name: 'Staff',
+        role: _getRole(email),
+      );
+      state = state.copyWith(user: user);
+    }
+  }
+
+  UserRole _getRole(String email) {
+    if (email.contains('admin')) return UserRole.admin;
+    if (email.contains('cashier')) return UserRole.cashier;
+    if (email.contains('waiter')) return UserRole.waiter;
+    if (email.contains('kitchen')) return UserRole.kitchen;
+    if (email.contains('bar')) return UserRole.kitchen;
+    return UserRole.admin;
   }
 
   Future<bool> login(String email, String password) async {
@@ -42,22 +63,14 @@ class AuthNotifier extends Notifier<AuthState> {
       if (token != null) {
         final prefs = await SharedPreferences.getInstance();
         await prefs.setString('access_token', token);
+        await prefs.setString('user_email', email);
       }
 
-      UserRole getRole(String email) {
-        if (email.contains('admin')) return UserRole.admin;
-        if (email.contains('cashier')) return UserRole.cashier;
-        if (email.contains('waiter')) return UserRole.waiter;
-        if (email.contains('kitchen')) return UserRole.kitchen;
-        if (email.contains('bar')) return UserRole.kitchen;
-        return UserRole.admin;
-      }
-      
       final user = User(
         id: 'real',
         email: email,
         name: 'Staff',
-        role: getRole(email),
+        role: _getRole(email),
       );
       
       state = state.copyWith(user: user, isLoading: false);
@@ -71,6 +84,7 @@ class AuthNotifier extends Notifier<AuthState> {
   Future<void> logout() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove('access_token');
+    await prefs.remove('user_email');
     state = AuthState(); 
   }
 }

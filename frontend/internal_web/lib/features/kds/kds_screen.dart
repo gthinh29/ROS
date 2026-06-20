@@ -61,6 +61,13 @@ class KdsScreen extends ConsumerWidget {
             tooltip: isMuted ? 'Bật âm báo đơn mới' : 'Tắt âm báo',
             onPressed: () => ref.read(kdsAudioProvider.notifier).toggleMute(),
           ),
+          IconButton(
+            icon: const Icon(Icons.refresh, color: Colors.blueAccent),
+            tooltip: 'Tải lại danh sách món',
+            onPressed: () {
+              ref.invalidate(kdsProvider);
+            },
+          ),
           if (hasCancelled)
             Padding(
               padding: const EdgeInsets.only(right: 8),
