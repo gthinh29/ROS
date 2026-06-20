@@ -176,7 +176,6 @@ def seed():
                     restaurant_id=restaurant.id,
                     zone="Zone A",
                     number=i,
-                    qr_token=str(tbl_id),
                     status=TableStatus.EMPTY,
                 )
             )
@@ -188,7 +187,6 @@ def seed():
                     restaurant_id=restaurant.id,
                     zone="Zone B",
                     number=i,
-                    qr_token=str(tbl_id),
                     status=TableStatus.EMPTY,
                 )
             )

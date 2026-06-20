@@ -1,7 +1,6 @@
 import uuid
 from typing import List
 from fastapi import APIRouter, Depends, HTTPException, status
-from fastapi.responses import Response
 from sqlalchemy.orm import Session
 
 from core.database import get_db
@@ -22,27 +21,23 @@ async def list_tables(
     """Retrieve all tables with their current status (For POS/Waiter)."""
     return services.get_tables(db)
 
+import datetime
+from fastapi import Query
+
+@router.get("/available", response_model=List[schemas.TableRead])
+async def list_available_tables(
+    date: datetime.date = Query(..., description="Target date for reservation"),
+    time: datetime.time = Query(..., description="Target time for reservation"),
+    db: Session = Depends(get_db),
+):
+    """Public endpoint: get available tables for a specific date and time block."""
+    return services.get_available_tables(db, date, time)
+
 @router.post("", response_model=schemas.TableRead, status_code=status.HTTP_201_CREATED)
 async def create_table(
     table_in: schemas.TableCreate,
     db: Session = Depends(get_db),
     current_user: dict = require_role(IS_ADMIN),
 ):
-    """Create a new table and auto-generate its QR code token (Admin only)."""
+    """Create a new table (Admin only)."""
     return services.create_table(db, table_in)
-
-@router.get("/{table_id}/qr", response_class=Response)
-async def get_table_qr_code(
-    table_id: uuid.UUID,
-    db: Session = Depends(get_db),
-    current_user: dict = require_role(IS_ADMIN),
-):
-    """Download the QR code image (PNG) for a specific table."""
-    table = services.get_table(db, table_id)
-    if not table:
-        raise HTTPException(status_code=404, detail="Table not found")
-    
-    img_bytes = services.generate_qr_code_png(table.qr_token)
-    return Response(content=img_bytes, media_type="image/png")
-
-

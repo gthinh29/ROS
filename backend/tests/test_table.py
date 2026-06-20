@@ -43,15 +43,7 @@ def test_create_table_initializes_empty_status():
         restaurant_id=uuid.uuid4(),
     )
 
-    table = table_services.create_table(fake_db, table_in)
+    table = table_services.create_table(fake_db, table_in)  # type: ignore
 
     assert table.status == table_services.TableStatus.EMPTY
-    assert table.qr_token
     assert fake_db.commits == 1
-
-
-def test_generate_qr_code_png_returns_png_bytes():
-    data = table_services.generate_qr_code_png("token-123")
-
-    assert isinstance(data, bytes)
-    assert data.startswith(b"\x89PNG")

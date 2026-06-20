@@ -9,13 +9,13 @@ Key flows:
 from __future__ import annotations
 
 import uuid
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 
 from fastapi import HTTPException, status
 from sqlalchemy.orm import Session
 
 from core.enums import OrderType, ReservationStatus, TableStatus
-from modules.reservations.models import Reservation, ReservationItem
+from modules.reservations.models import Reservation
 from modules.reservations.schemas import CheckinResponse, ReservationCreate, ReservationRead
 from modules.tables.models import Table
 
@@ -34,46 +34,75 @@ def _get_reservation_or_404(db: Session, reservation_id: uuid.UUID) -> Reservati
 async def create_reservation(db: Session, payload: ReservationCreate) -> Reservation:
     """Tạo đặt bàn mới. Nếu chọn bàn, chuyển trạng thái bàn → RESERVED."""
 
-    # Validate table nếu có
-    table: Table | None = None
     if payload.table_id:
         table = db.get(Table, payload.table_id)
         if not table:
             raise HTTPException(status_code=404, detail="Table not found")
-        if table.status not in (TableStatus.EMPTY,):
+        
+        # Check for overlapping reservations
+        start_dt = payload.reserved_at - timedelta(hours=2)
+        end_dt = payload.reserved_at + timedelta(hours=2)
+        
+        overlapping_res = db.query(Reservation).filter(
+            Reservation.table_id == payload.table_id,
+            Reservation.status.in_([ReservationStatus.PENDING, ReservationStatus.CONFIRMED, ReservationStatus.CHECKED_IN]),
+            Reservation.reserved_at > start_dt,
+            Reservation.reserved_at < end_dt
+        ).first()
+        
+        if overlapping_res:
             raise HTTPException(
                 status_code=status.HTTP_409_CONFLICT,
-                detail=f"Table is currently '{table.status.value}' and cannot be reserved",
+                detail="Bàn này đã được đặt trong khoảng thời gian bạn chọn.",
             )
+
+        # Check current table status if reservation is within 2 hours
+        now_vn = datetime.now() + timedelta(hours=7)
+        # Ensure payload.reserved_at is naive for comparison
+        res_at_naive = payload.reserved_at.replace(tzinfo=None)
+        if res_at_naive < now_vn + timedelta(hours=2):
+            if table.status not in (TableStatus.EMPTY,):
+                raise HTTPException(
+                    status_code=status.HTTP_409_CONFLICT,
+                    detail=f"Bàn này hiện tại đang có khách (Trạng thái: {table.status.value}) và không thể nhận khách mới trong 2 tiếng tới.",
+                )
+
+    import random
+    import string
+    import logging
+    import asyncio
+    from utils.email_sender import send_otp_email
+
+    # Generate OTP
+    otp_code = "".join(random.choices(string.digits, k=6))
+    otp_expires_at = datetime.now(timezone.utc) + timedelta(minutes=5)
+
+    # Mock email sending in log, but also trigger real email asynchronously
+    logging.info(f"Gửi OTP {otp_code} tới email {payload.email} cho đặt bàn {payload.customer_name}.")
+    
+    # Chạy ngầm việc gửi email để không block luồng trả về
+    asyncio.create_task(
+        asyncio.to_thread(send_otp_email, payload.email, otp_code, payload.customer_name)
+    )
 
     # Tạo Reservation
     reservation = Reservation(
         table_id=payload.table_id,
         customer_name=payload.customer_name,
         phone=payload.phone,
+        email=payload.email,
         reserved_at=payload.reserved_at,
         party_size=payload.party_size,
         note=payload.note,
         status=ReservationStatus.PENDING,
+        otp_code=otp_code,
+        otp_expires_at=otp_expires_at,
     )
     db.add(reservation)
     db.flush()  # get reservation.id
 
-    # Lưu pre-order items
-    for item_req in payload.pre_order_items:
-        modifier_str = ",".join(str(mid) for mid in item_req.modifier_ids) if item_req.modifier_ids else None
-        db.add(ReservationItem(
-            reservation_id=reservation.id,
-            menu_item_id=item_req.menu_item_id,
-            variant_id=item_req.variant_id,
-            modifier_ids=modifier_str,
-            qty=item_req.qty,
-            note=item_req.note,
-        ))
-
-    # Đánh dấu bàn là RESERVED
-    if table:
-        table.status = TableStatus.RESERVED
+    # Đánh dấu bàn là RESERVED (Chỉ khi đặt bàn cho ngay lúc này, nhưng thường thì không cần thiết)
+    # Chúng ta bỏ qua bước này để không khoá cứng trạng thái bàn cho tương lai.
 
     db.commit()
     db.refresh(reservation)
@@ -102,54 +131,13 @@ async def checkin(db: Session, reservation_id: uuid.UUID) -> CheckinResponse:
 
     db.flush()
 
-    # ── Tạo Order từ pre-order items (nếu có) ─────────────────────────────────
-    order_id: uuid.UUID | None = None
-
-    if reservation.items:
-        from modules.orders.schemas import OrderCreate, OrderItemCreate
-        from modules.orders.services import create_order
-
-        order_items = []
-        for ri in reservation.items:
-            modifier_ids: list[uuid.UUID] = []
-            if ri.modifier_ids:
-                modifier_ids = [uuid.UUID(mid) for mid in ri.modifier_ids.split(",") if mid]
-
-            order_items.append(OrderItemCreate(
-                menu_item_id=ri.menu_item_id,
-                variant_id=ri.variant_id,
-                modifier_ids=modifier_ids,
-                qty=ri.qty,
-                note=ri.note,
-            ))
-
-        order_payload = OrderCreate(
-            table_id=reservation.table_id,
-            reservation_id=reservation.id,
-            customer_name=reservation.customer_name,
-            phone=reservation.phone,
-            type=OrderType.PRE_ORDER,
-            items=order_items,
-        )
-
-        # create_order xử lý ACID lock + WS broadcast → dùng lại hoàn toàn
-        # Phải commit trạng thái hiện tại trước vì create_order tự commit
-        db.commit()
-        order = await create_order(db, order_payload)
-        order_id = order.id
-    else:
-        db.commit()
+    db.commit()
 
     return CheckinResponse(
-        reservation_id=reservation.id,
-        order_id=order_id,
-        table_id=reservation.table_id,
-        customer_name=reservation.customer_name,
-        message=(
-            "Check-in thành công. Đơn hàng đã được gửi xuống bếp."
-            if order_id
-            else "Check-in thành công. Không có pre-order."
-        ),
+        reservation_id=reservation.id, # type: ignore
+        table_id=reservation.table_id, # type: ignore
+        customer_name=reservation.customer_name, # type: ignore
+        message="Check-in thành công."
     )
 
 
@@ -185,8 +173,29 @@ async def cancel_reservation(db: Session, reservation_id: uuid.UUID) -> Reservat
     if reservation.table_id:
         table = db.get(Table, reservation.table_id)
         if table and table.status == TableStatus.RESERVED:
-            table.status = TableStatus.EMPTY
+            table.status = TableStatus.EMPTY # type: ignore
 
+    db.commit()
+    db.refresh(reservation)
+    return reservation
+
+async def verify_otp(db: Session, reservation_id: uuid.UUID, otp_code: str) -> Reservation:
+    """Verify OTP and update status to CONFIRMED."""
+    reservation = _get_reservation_or_404(db, reservation_id)
+
+    if reservation.status != ReservationStatus.PENDING:
+        raise HTTPException(
+            status_code=400,
+            detail="Reservation is not pending confirmation",
+        )
+
+    if not reservation.otp_code or reservation.otp_code != otp_code:
+        raise HTTPException(status_code=400, detail="Mã OTP không hợp lệ")
+
+    if reservation.otp_expires_at and datetime.now(timezone.utc) > reservation.otp_expires_at:
+        raise HTTPException(status_code=400, detail="Mã OTP đã hết hạn")
+
+    reservation.status = ReservationStatus.CONFIRMED # type: ignore
     db.commit()
     db.refresh(reservation)
     return reservation

@@ -15,6 +15,7 @@ from modules.reservations.schemas import (
     CheckinResponse,
     ReservationCreate,
     ReservationRead,
+    VerifyOTPRequest,
 )
 from utils.response_wrapper import ResponseWrapper
 
@@ -118,4 +119,20 @@ async def cancel_reservation(
     Bàn đã RESERVED sẽ được trả về EMPTY.
     """
     result = await services.cancel_reservation(db, reservation_id)
+    return ResponseWrapper.success_response(result)
+
+@router.post(
+    "/{reservation_id}/verify-otp",
+    response_model=ResponseWrapper[ReservationRead],
+    response_model_exclude_none=True,
+)
+async def verify_otp(
+    reservation_id: uuid.UUID,
+    payload: VerifyOTPRequest,
+    db: Session = Depends(get_db),
+):
+    """
+    Public endpoint: Khách hàng nhập OTP để xác nhận đặt bàn.
+    """
+    result = await services.verify_otp(db, reservation_id, payload.otp_code)
     return ResponseWrapper.success_response(result)

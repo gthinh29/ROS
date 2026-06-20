@@ -10,7 +10,7 @@ IS_PUBLIC = False # Set to False in production to enforce authentication on all 
 # Exact path matches that skip JWT validation
 _EXCLUDED_EXACT = {"/auth/login", "/auth/signup", "/health", "/favicon.ico"}
 # Prefix matches — any URL starting with these is public (skip auth IF no token provided)
-_EXCLUDED_PREFIXES = ("/menu", "/ws", "/reservations", "/orders", "/docs", "/openapi.json", "/redoc")
+_EXCLUDED_PREFIXES = ("/menu", "/ws", "/reservations", "/orders", "/docs", "/openapi.json", "/redoc", "/tables/available")
 
 
 class JWTAuthenticationMiddleware(BaseHTTPMiddleware):
