@@ -2,7 +2,9 @@ from fastapi import Request, HTTPException
 from fastapi.responses import JSONResponse
 from starlette.status import HTTP_500_INTERNAL_SERVER_ERROR
 
-async def http_exception_handler(request: Request, exc: HTTPException):
+from typing import Any
+
+async def http_exception_handler(request: Request, exc: Any):
     status_type_map = {
         400: "Bad Request",
         401: "Unauthorized",
