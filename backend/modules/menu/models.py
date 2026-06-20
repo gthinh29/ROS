@@ -47,6 +47,7 @@ class MenuItem(Base):
     base_price: Mapped[float] = mapped_column(Numeric(12, 2), nullable=False)
     image_url: Mapped[str | None] = mapped_column(Text, nullable=True)
     is_available: Mapped[bool] = mapped_column(Boolean, default=True)
+    is_featured: Mapped[bool] = mapped_column(Boolean, default=False)
     kds_zone: Mapped[str] = mapped_column(
         String(20), default="kitchen", nullable=False
     )

@@ -75,6 +75,7 @@ class MenuItemBase(BaseModel):
     base_price: float
     image_url: Optional[str] = None
     is_available: bool = True
+    is_featured: bool = False
     kds_zone: str = Field(default="kitchen", max_length=20)
 
 class MenuItemCreate(MenuItemBase):
@@ -87,6 +88,7 @@ class MenuItemUpdate(BaseModel):
     base_price: Optional[float] = None
     image_url: Optional[str] = None
     is_available: Optional[bool] = None
+    is_featured: Optional[bool] = None
     kds_zone: Optional[str] = Field(None, max_length=20)
     variants: Optional[List[VariantUpdate]] = None
     modifiers: Optional[List[ModifierUpdate]] = None

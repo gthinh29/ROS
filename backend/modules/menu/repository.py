@@ -16,7 +16,7 @@ class CategoryRepository:
         ).first()
 
     @staticmethod
-    def get_categories(db: Session, restaurant_id: UUID = None, skip: int = 0, limit: int = 50) -> list[Category]:
+    def get_categories(db: Session, restaurant_id: UUID | None = None, skip: int = 0, limit: int = 50) -> list[Category]:
         query = db.query(Category)
         if restaurant_id:
             query = query.filter(Category.restaurant_id == restaurant_id)
@@ -61,7 +61,7 @@ class MenuItemRepository:
         ).first()
 
     @staticmethod
-    def get_menu_items(db: Session, category_id: UUID = None, is_available: bool = None, skip: int = 0, limit: int = 50) -> list[MenuItem]:
+    def get_menu_items(db: Session, category_id: UUID | None = None, is_available: bool | None = None, skip: int = 0, limit: int = 50) -> list[MenuItem]:
         query = db.query(MenuItem).options(
             selectinload(MenuItem.variants),
             selectinload(MenuItem.modifiers)
@@ -73,7 +73,7 @@ class MenuItemRepository:
         return query.offset(skip).limit(limit).all()
 
     @staticmethod
-    def create_menu_item(db: Session, data: dict, variants_data: list = None, modifiers_data: list = None) -> MenuItem:
+    def create_menu_item(db: Session, data: dict, variants_data: list | None = None, modifiers_data: list | None = None) -> MenuItem:
         db_obj = MenuItem(**data)
         
         if variants_data:

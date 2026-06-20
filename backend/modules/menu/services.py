@@ -36,7 +36,7 @@ def create_category(db: Session, data: CategoryCreate) -> Category:
     return CategoryRepository.create_category(db, data.model_dump())
 
 # Get categories with optional restaurant filter and pagination
-def get_categories(db: Session, restaurant_id: UUID = None, skip: int = 0, limit: int = 50) -> List[Category]:
+def get_categories(db: Session, restaurant_id: UUID | None = None, skip: int = 0, limit: int = 50) -> List[Category]:
     list_categories = CategoryRepository.get_categories(db, restaurant_id, skip, limit)
     if not list_categories:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No categories found.")
@@ -56,7 +56,7 @@ def update_category(db: Session, category_id: UUID, data: CategoryUpdate) -> Cat
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Category not found.")
     
     if data.name and data.name != db_obj.name:
-        existing_cat = CategoryRepository.get_category_by_name(db, db_obj.restaurant_id, data.name)
+        existing_cat = CategoryRepository.get_category_by_name(db, db_obj.restaurant_id, data.name) # type: ignore
         if existing_cat:
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Category name already exists for this restaurant.")
     
@@ -64,7 +64,7 @@ def update_category(db: Session, category_id: UUID, data: CategoryUpdate) -> Cat
     return CategoryRepository.update_category(db, db_obj, update_data)
 
 # Delete category only if it has no menu items. Otherwise, return an error message.
-def delete_category(db: Session, category_id: UUID) -> None:
+def delete_category(db: Session, category_id: UUID) -> dict:
     db_obj = CategoryRepository.get_category_by_id(db, category_id)
     if not db_obj:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Category not found.")
@@ -103,8 +103,8 @@ def create_menu_item(db: Session, data: MenuItemCreate) -> MenuItem:
 
 def get_menu_items(
     db: Session,
-    category_id: UUID = None,
-    is_available: bool = None,
+    category_id: UUID | None = None,
+    is_available: bool | None = None,
     skip: int = 0,
     limit: int = 50,
 ) -> List[MenuItem]:
@@ -135,7 +135,7 @@ def update_menu_item(db: Session, menu_item_id: UUID, data: MenuItemUpdate) -> M
 
     # Check for name uniqueness if name or category is being updated
     if data.name and (data.name != db_obj.name or data.category_id):
-        existing_item = MenuItemRepository.get_menu_item_by_name(db, target_category_id, data.name)
+        existing_item = MenuItemRepository.get_menu_item_by_name(db, target_category_id, data.name) # type: ignore
         if existing_item and existing_item.id != db_obj.id:
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Menu item name already exists in the target category.")
 
@@ -158,8 +158,8 @@ def update_menu_item(db: Session, menu_item_id: UUID, data: MenuItemUpdate) -> M
         for incoming_v in data.variants:
             if incoming_v.id and incoming_v.id in existing_variants:
                 existing_variant = existing_variants[incoming_v.id]
-                existing_variant.name = incoming_v.name if incoming_v.name is not None else existing_variant.name
-                existing_variant.extra_price = incoming_v.extra_price if incoming_v.extra_price is not None else existing_variant.extra_price
+                existing_variant.name = incoming_v.name if incoming_v.name is not None else existing_variant.name # type: ignore
+                existing_variant.extra_price = incoming_v.extra_price if incoming_v.extra_price is not None else existing_variant.extra_price # type: ignore
             else:
                 db_obj.variants.append(Variant(
                     name=incoming_v.name,
@@ -180,9 +180,9 @@ def update_menu_item(db: Session, menu_item_id: UUID, data: MenuItemUpdate) -> M
         for incoming_m in data.modifiers:
             if incoming_m.id and incoming_m.id in existing_modifiers:
                 existing_modifier = existing_modifiers[incoming_m.id]
-                existing_modifier.name = incoming_m.name if incoming_m.name is not None else existing_modifier.name
-                existing_modifier.extra_price = incoming_m.extra_price if incoming_m.extra_price is not None else existing_modifier.extra_price
-                existing_modifier.is_required = incoming_m.is_required if incoming_m.is_required is not None else existing_modifier.is_required
+                existing_modifier.name = incoming_m.name if incoming_m.name is not None else existing_modifier.name # type: ignore
+                existing_modifier.extra_price = incoming_m.extra_price if incoming_m.extra_price is not None else existing_modifier.extra_price # type: ignore
+                existing_modifier.is_required = incoming_m.is_required if incoming_m.is_required is not None else existing_modifier.is_required # type: ignore
             else:
                 db_obj.modifiers.append(Modifier(
                     name=incoming_m.name,
@@ -259,8 +259,7 @@ def update_variant(db: Session, variant_id: UUID, data: VariantUpdate) -> Varian
         return variant
     return VariantRepository.update_variant(db, variant, update_data)
 
-# Delete variant
-def delete_variant(db: Session, variant_id: UUID) -> None:
+def delete_variant(db: Session, variant_id: UUID) -> dict:
     variant = VariantRepository.get_variant_by_id(db, variant_id)
     if not variant:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Variant not found.")
@@ -309,8 +308,7 @@ def update_modifier(db: Session, modifier_id: UUID, data: ModifierUpdate) -> Mod
         return modifier
     return ModifierRepository.update_modifier(db, modifier, update_data)
 
-# Delete modifier
-def delete_modifier(db: Session, modifier_id: UUID) -> None:
+def delete_modifier(db: Session, modifier_id: UUID) -> dict:
     modifier = ModifierRepository.get_modifier_by_id(db, modifier_id)
     if not modifier:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Modifier not found.")

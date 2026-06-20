@@ -1,7 +1,9 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, UploadFile, File
 from sqlalchemy.orm import Session
 from uuid import UUID
 from typing import List, Optional
+import os
+import shutil
 
 from core.database import get_db
 from utils.response_wrapper import ResponseWrapper
@@ -106,6 +108,26 @@ def delete_menu_item(menu_item_id: UUID,
                     current_user: dict = require_role(IS_ADMIN)):
     result = services.delete_menu_item(db, menu_item_id)
     return ResponseWrapper.success_response(result)
+
+@router.post("/items/upload-image", response_model=ResponseWrapper[dict])
+def upload_menu_image(
+    file: UploadFile = File(...),
+    current_user: dict = require_role(IS_ADMIN)
+):
+    # Ensure static/images directory exists
+    os.makedirs("static/images", exist_ok=True)
+    
+    filename = file.filename or "uploaded_image.png"
+    file_extension = filename.split(".")[-1] if "." in filename else "png"
+    import uuid
+    new_filename = f"{uuid.uuid4()}.{file_extension}"
+    file_path = f"static/images/{new_filename}"
+    
+    with open(file_path, "wb") as buffer:
+        shutil.copyfileobj(file.file, buffer)
+        
+    return ResponseWrapper.success_response({"image_url": f"/{file_path}"})
+
 
 
 @router.post("/items/{menu_item_id}/variants", response_model=ResponseWrapper[VariantRead],
