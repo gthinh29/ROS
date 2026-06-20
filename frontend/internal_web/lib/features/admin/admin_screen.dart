@@ -2,10 +2,67 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../auth/auth_notifier.dart';
+import 'tabs/dashboard_tab.dart';
 import 'tabs/menu_tab.dart';
 import 'tabs/table_tab.dart';
 import 'tabs/user_tab.dart';
 import 'tabs/inventory_tab.dart';
+
+// ─── Sidebar item descriptor ──────────────────────────────────────────────────
+class _NavItem {
+  final IconData icon;
+  final IconData iconFilled;
+  final String title;
+
+  const _NavItem({
+    required this.icon,
+    required this.iconFilled,
+    required this.title,
+  });
+}
+
+const _navItems = <_NavItem>[
+  _NavItem(
+    icon: Icons.dashboard_outlined,
+    iconFilled: Icons.dashboard_rounded,
+    title: 'Tổng Quan',
+  ),
+  _NavItem(
+    icon: Icons.restaurant_menu_outlined,
+    iconFilled: Icons.restaurant_menu,
+    title: 'Thực đơn',
+  ),
+  _NavItem(
+    icon: Icons.table_restaurant_outlined,
+    iconFilled: Icons.table_restaurant,
+    title: 'Sơ đồ Bàn',
+  ),
+  _NavItem(
+    icon: Icons.people_alt_outlined,
+    iconFilled: Icons.people_alt,
+    title: 'Nhân sự',
+  ),
+  _NavItem(
+    icon: Icons.inventory_2_outlined,
+    iconFilled: Icons.inventory_2,
+    title: 'Kho & Định Lượng',
+  ),
+  _NavItem(
+    icon: Icons.bar_chart_outlined,
+    iconFilled: Icons.bar_chart,
+    title: 'Báo cáo',
+  ),
+];
+
+// ─── Tab titles ───────────────────────────────────────────────────────────────
+const _tabTitles = [
+  'Tổng Quan',
+  'Thực Đơn',
+  'Sơ Đồ Bàn',
+  'Nhân Sự',
+  'Kho & Định Lượng',
+  'Báo Cáo Chi Tiết',
+];
 
 class AdminScreen extends ConsumerStatefulWidget {
   const AdminScreen({super.key});
@@ -21,7 +78,8 @@ class _AdminScreenState extends ConsumerState<AdminScreen>
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 4, vsync: this);
+    _tabController = TabController(length: _navItems.length, vsync: this);
+    _tabController.addListener(() => setState(() {}));
   }
 
   @override
@@ -36,14 +94,25 @@ class _AdminScreenState extends ConsumerState<AdminScreen>
       backgroundColor: const Color(0xFFF1F5F9), // Slate 50
       body: Row(
         children: [
-          // SIDEBAR (Premium Dark Theme)
+          // ── SIDEBAR ──────────────────────────────────────────────────────
           Container(
             width: 260,
-            color: const Color(0xFF0F172A), // Slate 900
+            decoration: const BoxDecoration(
+              color: Color(0xFF0F172A), // Slate 900
+              boxShadow: [
+                BoxShadow(
+                  color: Color(0x33000000),
+                  blurRadius: 16,
+                  offset: Offset(4, 0),
+                ),
+              ],
+            ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const SizedBox(height: 32),
+
+                // Brand logo row
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 24.0),
                   child: Row(
@@ -51,64 +120,126 @@ class _AdminScreenState extends ConsumerState<AdminScreen>
                       Container(
                         padding: const EdgeInsets.all(8),
                         decoration: BoxDecoration(
-                          color: Colors.blueAccent,
-                          borderRadius: BorderRadius.circular(8),
+                          gradient: const LinearGradient(
+                            colors: [Color(0xFF3B82F6), Color(0xFF8B5CF6)],
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                          ),
+                          borderRadius: BorderRadius.circular(10),
                         ),
                         child: const Icon(
                           Icons.restaurant,
                           color: Colors.white,
-                          size: 24,
+                          size: 22,
                         ),
                       ),
-                      const SizedBox(width: 16),
-                      const Text(
-                        'ROS Admin',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 22,
-                          fontWeight: FontWeight.bold,
-                          letterSpacing: 1.2,
-                        ),
+                      const SizedBox(width: 14),
+                      const Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'ROS Admin',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              letterSpacing: 0.5,
+                            ),
+                          ),
+                          Text(
+                            'Restaurant OS',
+                            style: TextStyle(
+                              color: Color(0xFF64748B),
+                              fontSize: 11,
+                            ),
+                          ),
+                        ],
                       ),
                     ],
                   ),
                 ),
-                const SizedBox(height: 48),
 
-                // Menu Items
-                _buildMenuItem(Icons.restaurant_menu_outlined, 'Thực đơn', 0),
-                _buildMenuItem(Icons.table_restaurant_outlined, 'Sơ đồ Bàn', 1),
-                _buildMenuItem(Icons.people_alt_outlined, 'Nhân sự', 2),
-                _buildMenuItem(
-                  Icons.inventory_2_outlined,
-                  'Kho & Định Lượng',
-                  3,
+                const SizedBox(height: 36),
+
+                // Nav section label
+                Padding(
+                  padding: const EdgeInsets.only(left: 24, bottom: 8),
+                  child: Text(
+                    'MENU CHÍNH',
+                    style: TextStyle(
+                      color: const Color(0xFF475569),
+                      fontSize: 10,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: 1.5,
+                    ),
+                  ),
                 ),
+
+                // Nav items (0-4 = main tabs)
+                ...List.generate(5, (i) => _buildMenuItem(_navItems[i], i)),
+
+                const SizedBox(height: 24),
+
+                // Divider
+                const Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 24),
+                  child: Divider(
+                    color: Color(0xFF1E293B),
+                    thickness: 1,
+                  ),
+                ),
+                const SizedBox(height: 16),
+
+                // Nav section label
+                Padding(
+                  padding: const EdgeInsets.only(left: 24, bottom: 8),
+                  child: Text(
+                    'PHÂN TÍCH',
+                    style: TextStyle(
+                      color: const Color(0xFF475569),
+                      fontSize: 10,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: 1.5,
+                    ),
+                  ),
+                ),
+
+                // Reports (index 5)
+                _buildMenuItem(_navItems[5], 5),
 
                 const Spacer(),
 
                 // User Profile & Logout Box
                 Container(
-                  padding: const EdgeInsets.all(20),
-                  decoration: const BoxDecoration(
-                    color: Color(0xFF1E293B), // Slate 800
-                    border: Border(
-                      top: BorderSide(color: Color(0xFF334155), width: 1),
-                    ),
+                  padding: const EdgeInsets.all(16),
+                  margin: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF1E293B),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: const Color(0xFF334155)),
                   ),
                   child: Row(
                     children: [
-                      const CircleAvatar(
-                        backgroundColor: Colors.blueAccent,
-                        child: Text(
+                      Container(
+                        width: 38,
+                        height: 38,
+                        decoration: BoxDecoration(
+                          gradient: const LinearGradient(
+                            colors: [Color(0xFF3B82F6), Color(0xFF8B5CF6)],
+                          ),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        alignment: Alignment.center,
+                        child: const Text(
                           'AD',
                           style: TextStyle(
                             color: Colors.white,
                             fontWeight: FontWeight.bold,
+                            fontSize: 13,
                           ),
                         ),
                       ),
-                      const SizedBox(width: 12),
+                      const SizedBox(width: 10),
                       const Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -117,21 +248,26 @@ class _AdminScreenState extends ConsumerState<AdminScreen>
                               'Administrator',
                               style: TextStyle(
                                 color: Colors.white,
-                                fontWeight: FontWeight.bold,
+                                fontWeight: FontWeight.w600,
+                                fontSize: 13,
                               ),
                             ),
                             Text(
                               'admin@ros.com',
                               style: TextStyle(
-                                color: Colors.white70,
-                                fontSize: 12,
+                                color: Color(0xFF64748B),
+                                fontSize: 11,
                               ),
                             ),
                           ],
                         ),
                       ),
                       IconButton(
-                        icon: const Icon(Icons.logout, color: Colors.white70),
+                        icon: const Icon(
+                          Icons.logout_rounded,
+                          color: Color(0xFF94A3B8),
+                          size: 18,
+                        ),
                         tooltip: 'Đăng xuất',
                         onPressed: () {
                           ref.read(authProvider.notifier).logout();
@@ -141,11 +277,12 @@ class _AdminScreenState extends ConsumerState<AdminScreen>
                     ],
                   ),
                 ),
+                const SizedBox(height: 8),
               ],
             ),
           ),
 
-          // MAIN CONTENT
+          // ── MAIN CONTENT ──────────────────────────────────────────────────
           Expanded(
             child: Column(
               children: [
@@ -164,17 +301,17 @@ class _AdminScreenState extends ConsumerState<AdminScreen>
                         ),
                       ],
                     ),
-                    clipBehavior:
-                        Clip.antiAlias, // To ensure tabs respect border radius
+                    clipBehavior: Clip.antiAlias,
                     child: TabBarView(
                       controller: _tabController,
-                      physics:
-                          const NeverScrollableScrollPhysics(), // Disable swipe if needed on web
+                      physics: const NeverScrollableScrollPhysics(),
                       children: const [
+                        DashboardTab(),
                         MenuTab(),
                         TableTab(),
                         UserTab(),
                         InventoryTab(),
+                        _ReportsTab(),
                       ],
                     ),
                   ),
@@ -188,13 +325,14 @@ class _AdminScreenState extends ConsumerState<AdminScreen>
   }
 
   Widget _buildTopBar() {
+    final idx = _tabController.index;
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 20),
+      padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 18),
       decoration: BoxDecoration(
         color: Colors.white,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.02),
+            color: Colors.black.withValues(alpha: 0.03),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -202,61 +340,77 @@ class _AdminScreenState extends ConsumerState<AdminScreen>
       ),
       child: Row(
         children: [
-          const Column(
+          Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'Dashboard',
-                style: TextStyle(
-                  fontSize: 24,
+                _tabTitles[idx],
+                style: const TextStyle(
+                  fontSize: 22,
                   fontWeight: FontWeight.bold,
                   color: Color(0xFF0F172A),
                 ),
               ),
-              SizedBox(height: 4),
-              Text(
-                'Chào mừng trở lại, hãy quản lý nhà hàng của bạn.',
-                style: TextStyle(fontSize: 14, color: Colors.grey),
+              const SizedBox(height: 3),
+              const Text(
+                'Hệ thống quản lý nhà hàng ROS',
+                style: TextStyle(fontSize: 13, color: Color(0xFF94A3B8)),
               ),
             ],
           ),
           const Spacer(),
+          // Search box
           Container(
-            width: 300,
-            height: 45,
+            width: 280,
+            height: 42,
             decoration: BoxDecoration(
-              color: const Color(0xFFF1F5F9), // Slate 50
+              color: const Color(0xFFF1F5F9),
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: const Color(0xFFE2E8F0)), // Slate 200
+              border: Border.all(color: const Color(0xFFE2E8F0)),
             ),
             child: const TextField(
               decoration: InputDecoration(
                 hintText: 'Tìm kiếm...',
-                hintStyle: TextStyle(color: Colors.grey, fontSize: 14),
+                hintStyle: TextStyle(color: Color(0xFF94A3B8), fontSize: 13),
                 border: InputBorder.none,
-                prefixIcon: Icon(Icons.search, color: Colors.grey),
-                contentPadding: EdgeInsets.symmetric(vertical: 13),
+                prefixIcon: Icon(
+                  Icons.search,
+                  color: Color(0xFF94A3B8),
+                  size: 18,
+                ),
+                contentPadding: EdgeInsets.symmetric(vertical: 12),
               ),
             ),
           ),
-          const SizedBox(width: 24),
+          const SizedBox(width: 16),
+          // Notification bell
           Stack(
             children: [
-              IconButton(
-                icon: const Icon(
-                  Icons.notifications_outlined,
-                  color: Color(0xFF475569),
+              Container(
+                width: 42,
+                height: 42,
+                decoration: BoxDecoration(
+                  color: const Color(0xFFF1F5F9),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: const Color(0xFFE2E8F0)),
                 ),
-                onPressed: () {},
+                child: IconButton(
+                  icon: const Icon(
+                    Icons.notifications_outlined,
+                    color: Color(0xFF475569),
+                    size: 20,
+                  ),
+                  onPressed: () {},
+                ),
               ),
               Positioned(
                 right: 8,
                 top: 8,
                 child: Container(
-                  width: 10,
-                  height: 10,
+                  width: 8,
+                  height: 8,
                   decoration: const BoxDecoration(
-                    color: Colors.redAccent,
+                    color: Color(0xFFEF4444),
                     shape: BoxShape.circle,
                   ),
                 ),
@@ -268,51 +422,267 @@ class _AdminScreenState extends ConsumerState<AdminScreen>
     );
   }
 
-  Widget _buildMenuItem(IconData icon, String title, int index) {
+  Widget _buildMenuItem(_NavItem item, int index) {
     final isSelected = _tabController.index == index;
 
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: () {
-          setState(() {
-            _tabController.index = index;
-          });
-        },
-        hoverColor: const Color(0xFF1E293B),
-        child: Container(
-          padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 24),
-          decoration: BoxDecoration(
-            border: Border(
-              left: BorderSide(
-                color: isSelected ? Colors.blueAccent : Colors.transparent,
-                width: 4,
+    return _SidebarNavItem(
+      icon: item.icon,
+      iconFilled: item.iconFilled,
+      title: item.title,
+      isSelected: isSelected,
+      onTap: () => setState(() => _tabController.index = index),
+    );
+  }
+}
+
+// ─── Sidebar Nav Item with smooth hover ──────────────────────────────────────
+class _SidebarNavItem extends StatefulWidget {
+  final IconData icon;
+  final IconData iconFilled;
+  final String title;
+  final bool isSelected;
+  final VoidCallback onTap;
+
+  const _SidebarNavItem({
+    required this.icon,
+    required this.iconFilled,
+    required this.title,
+    required this.isSelected,
+    required this.onTap,
+  });
+
+  @override
+  State<_SidebarNavItem> createState() => _SidebarNavItemState();
+}
+
+class _SidebarNavItemState extends State<_SidebarNavItem>
+    with SingleTickerProviderStateMixin {
+  bool _hovered = false;
+  late final AnimationController _ctrl;
+  late final Animation<double> _anim;
+
+  @override
+  void initState() {
+    super.initState();
+    _ctrl = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 180),
+    );
+    _anim = CurvedAnimation(parent: _ctrl, curve: Curves.easeOut);
+  }
+
+  @override
+  void dispose() {
+    _ctrl.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return MouseRegion(
+      onEnter: (_) {
+        setState(() => _hovered = true);
+        _ctrl.forward();
+      },
+      onExit: (_) {
+        setState(() => _hovered = false);
+        _ctrl.reverse();
+      },
+      child: GestureDetector(
+        onTap: widget.onTap,
+        child: AnimatedBuilder(
+          animation: _anim,
+          builder: (_, __) {
+            final showHighlight = widget.isSelected || _hovered;
+            return Container(
+              margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
+              decoration: BoxDecoration(
+                color: widget.isSelected
+                    ? const Color(0xFF1E40AF).withValues(alpha: 0.9)
+                    : _hovered
+                        ? const Color(0xFF1E293B)
+                        : Colors.transparent,
+                borderRadius: BorderRadius.circular(10),
+                border: widget.isSelected
+                    ? Border.all(
+                        color: const Color(0xFF3B82F6).withValues(alpha: 0.5),
+                        width: 1,
+                      )
+                    : null,
               ),
-            ),
-            color: isSelected ? const Color(0xFF1E293B) : Colors.transparent,
-          ),
-          child: Row(
-            children: [
-              Icon(
-                icon,
-                color: isSelected
-                    ? Colors.blueAccent
-                    : const Color(0xFF94A3B8), // Slate 400
-                size: 22,
+              child: Row(
+                children: [
+                  // Icon with glow for selected
+                  AnimatedSwitcher(
+                    duration: const Duration(milliseconds: 200),
+                    child: Icon(
+                      showHighlight ? widget.iconFilled : widget.icon,
+                      key: ValueKey(showHighlight),
+                      color: widget.isSelected
+                          ? const Color(0xFF93C5FD)
+                          : _hovered
+                              ? const Color(0xFFCBD5E1)
+                              : const Color(0xFF64748B),
+                      size: 20,
+                    ),
+                  ),
+                  const SizedBox(width: 14),
+                  Expanded(
+                    child: Text(
+                      widget.title,
+                      style: TextStyle(
+                        color: widget.isSelected
+                            ? Colors.white
+                            : _hovered
+                                ? const Color(0xFFE2E8F0)
+                                : const Color(0xFF64748B),
+                        fontSize: 14,
+                        fontWeight: widget.isSelected
+                            ? FontWeight.w600
+                            : FontWeight.w400,
+                      ),
+                    ),
+                  ),
+                  // Active indicator dot
+                  if (widget.isSelected)
+                    Container(
+                      width: 6,
+                      height: 6,
+                      decoration: const BoxDecoration(
+                        color: Color(0xFF3B82F6),
+                        shape: BoxShape.circle,
+                      ),
+                    ),
+                ],
               ),
-              const SizedBox(width: 16),
-              Text(
-                title,
-                style: TextStyle(
-                  color: isSelected ? Colors.white : const Color(0xFF94A3B8),
-                  fontSize: 16,
-                  fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
-                ),
-              ),
-            ],
-          ),
+            );
+          },
         ),
       ),
     );
   }
+}
+
+// ─── Reports Tab (placeholder UI) ────────────────────────────────────────────
+class _ReportsTab extends StatefulWidget {
+  const _ReportsTab();
+
+  @override
+  State<_ReportsTab> createState() => _ReportsTabState();
+}
+
+class _ReportsTabState extends State<_ReportsTab> {
+  DateTimeRange? _range;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.all(28),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Header row
+          Row(
+            children: [
+              const Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Báo Cáo Chi Tiết',
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFF0F172A),
+                    ),
+                  ),
+                  SizedBox(height: 4),
+                  Text(
+                    'Lọc và xem báo cáo doanh thu, đơn hàng theo khoảng thời gian',
+                    style: TextStyle(fontSize: 13, color: Color(0xFF64748B)),
+                  ),
+                ],
+              ),
+              const Spacer(),
+              // Date range picker button
+              OutlinedButton.icon(
+                icon: const Icon(Icons.calendar_today_outlined, size: 16),
+                label: Text(
+                  _range == null
+                      ? 'Chọn khoảng thời gian'
+                      : '${_formatDate(_range!.start)} → ${_formatDate(_range!.end)}',
+                  style: const TextStyle(fontSize: 13),
+                ),
+                style: OutlinedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 12,
+                  ),
+                  side: const BorderSide(color: Color(0xFFCBD5E1)),
+                ),
+                onPressed: () async {
+                  final picked = await showDateRangePicker(
+                    context: context,
+                    firstDate: DateTime(2024),
+                    lastDate: DateTime.now(),
+                    initialDateRange: _range,
+                    builder: (ctx, child) => Theme(
+                      data: Theme.of(ctx).copyWith(
+                        colorScheme: const ColorScheme.light(
+                          primary: Color(0xFF3B82F6),
+                        ),
+                      ),
+                      child: child!,
+                    ),
+                  );
+                  if (picked != null) setState(() => _range = picked);
+                },
+              ),
+            ],
+          ),
+
+          const SizedBox(height: 24),
+          const Divider(color: Color(0xFFE2E8F0)),
+          const SizedBox(height: 24),
+
+          // Placeholder table
+          Expanded(
+            child: Center(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    Icons.bar_chart_rounded,
+                    size: 80,
+                    color: Colors.grey.shade200,
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    _range == null
+                        ? 'Chọn khoảng thời gian để xem báo cáo'
+                        : 'Đang tải báo cáo từ ${_formatDate(_range!.start)} đến ${_formatDate(_range!.end)}...',
+                    style: TextStyle(
+                      fontSize: 15,
+                      color: Colors.grey.shade400,
+                    ),
+                  ),
+                  if (_range != null) ...[
+                    const SizedBox(height: 20),
+                    FilledButton.icon(
+                      icon: const Icon(Icons.download_outlined, size: 16),
+                      label: const Text('Xuất báo cáo (CSV)'),
+                      onPressed: () {},
+                    ),
+                  ],
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  String _formatDate(DateTime d) =>
+      '${d.day.toString().padLeft(2, '0')}/${d.month.toString().padLeft(2, '0')}/${d.year}';
 }

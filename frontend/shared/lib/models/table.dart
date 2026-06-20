@@ -5,6 +5,7 @@ class TableModel {
   final String zone;
   final int number;
   final TableStatus status;
+  final int? capacity;
   final DateTime? upcomingReservationTime;
 
   TableModel({
@@ -12,6 +13,7 @@ class TableModel {
     required this.zone,
     required this.number,
     required this.status,
+    this.capacity,
     this.upcomingReservationTime,
   });
 
@@ -24,6 +26,7 @@ class TableModel {
         (e) => e.name.toUpperCase() == (json['status'] as String).toUpperCase(),
         orElse: () => TableStatus.empty,
       ),
+      capacity: json['capacity'] as int?,
       upcomingReservationTime: json['upcoming_reservation_time'] != null
           ? DateTime.parse(json['upcoming_reservation_time'] as String)
           : null,
@@ -35,6 +38,7 @@ class TableModel {
     String? zone,
     int? number,
     TableStatus? status,
+    int? capacity,
     DateTime? upcomingReservationTime,
   }) {
     return TableModel(
@@ -42,6 +46,7 @@ class TableModel {
       zone: zone ?? this.zone,
       number: number ?? this.number,
       status: status ?? this.status,
+      capacity: capacity ?? this.capacity,
       upcomingReservationTime: upcomingReservationTime ?? this.upcomingReservationTime,
     );
   }
