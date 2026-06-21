@@ -372,7 +372,7 @@ async def verify_otp(db: Session, reservation_id: uuid.UUID, otp_code: str) -> R
 
 
 
-    if reservation.otp_expires_at and datetime.now(timezone.utc) > reservation.otp_expires_at:
+    if reservation.otp_expires_at and datetime.now(timezone.utc) > reservation.otp_expires_at: # pyright: ignore[reportOperatorIssue]
 
         raise HTTPException(status_code=400, detail="Mã OTP đã hết hạn")
 
