@@ -2,6 +2,7 @@
 
 
 
+from datetime import datetime
 import uuid
 
 
@@ -46,7 +47,7 @@ class Reservation(Base):
 
     email: Mapped[str] = mapped_column(String(255), nullable=False)
 
-    reserved_at: Mapped[str] = mapped_column(
+    reserved_at: Mapped[datetime] = mapped_column(
 
         DateTime(timezone=True), nullable=False
 
@@ -66,9 +67,9 @@ class Reservation(Base):
 
     otp_code: Mapped[str | None] = mapped_column(String(10), nullable=True)
 
-    otp_expires_at: Mapped[str | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    otp_expires_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
 
-    created_at: Mapped[str] = mapped_column(
+    created_at: Mapped[datetime] = mapped_column(
 
         DateTime(timezone=True), server_default=func.now()
 

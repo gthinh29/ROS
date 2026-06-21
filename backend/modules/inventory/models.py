@@ -2,6 +2,7 @@
 
 
 
+from datetime import datetime
 import uuid
 
 
@@ -54,7 +55,7 @@ class Ingredient(Base):
 
     alert_threshold: Mapped[float] = mapped_column(Numeric(12, 2), default=0)
 
-    created_at: Mapped[str] = mapped_column(
+    created_at: Mapped[datetime] = mapped_column(
 
         DateTime(timezone=True), server_default=func.now()
 
@@ -144,7 +145,7 @@ class InventoryLog(Base):
 
     )
 
-    created_at: Mapped[str] = mapped_column(
+    created_at: Mapped[datetime] = mapped_column(
 
         DateTime(timezone=True), server_default=func.now()
 
