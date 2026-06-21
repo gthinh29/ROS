@@ -2,6 +2,7 @@
 
 
 
+import datetime
 import uuid
 
 
@@ -58,7 +59,7 @@ class Restaurant(Base):
 
     settings: Mapped[dict | None] = mapped_column(JSONB, nullable=True)
 
-    created_at: Mapped[str] = mapped_column(
+    created_at: Mapped[datetime] = mapped_column(
 
         DateTime(timezone=True), server_default=func.now()
 
@@ -116,7 +117,7 @@ class Table(Base):
 
     y_pos: Mapped[float] = mapped_column(Float, default=0.0, nullable=False)
 
-    created_at: Mapped[str] = mapped_column(
+    created_at: Mapped[datetime] = mapped_column(
 
         DateTime(timezone=True), server_default=func.now()
 

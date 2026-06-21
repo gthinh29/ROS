@@ -2,6 +2,7 @@
 
 
 
+from datetime import datetime
 import uuid
 
 
@@ -66,13 +67,13 @@ class User(Base):
 
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
 
-    created_at: Mapped[str] = mapped_column(
+    created_at: Mapped[datetime] = mapped_column(
 
         DateTime(timezone=True), server_default=func.now()
 
     )
 
-    updated_at: Mapped[str | None] = mapped_column(
+    updated_at: Mapped[datetime | None] = mapped_column(
 
         DateTime(timezone=True), onupdate=func.now(), nullable=True
 
@@ -120,7 +121,7 @@ class RefreshToken(Base):
 
     token: Mapped[str] = mapped_column(Text, nullable=False, unique=True)
 
-    expires_at: Mapped[str] = mapped_column(
+    expires_at: Mapped[datetime] = mapped_column(
 
         DateTime(timezone=True), nullable=False
 
@@ -128,7 +129,7 @@ class RefreshToken(Base):
 
     is_revoked: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
 
-    created_at: Mapped[str] = mapped_column(
+    created_at: Mapped[datetime] = mapped_column(
 
         DateTime(timezone=True), server_default=func.now()
 
