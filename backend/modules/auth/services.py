@@ -88,7 +88,7 @@ async def login_user(db: Session, request: LoginRequest) -> LoginResponse:
 
 
 
-    if not pwd_context.verify(request.password, user.password_hash):
+    if not pwd_context.verify(request.password, user.password_hash):  # type: ignore
 
         raise HTTPException(
 
@@ -154,11 +154,11 @@ async def refresh_access_token(db: Session, request: RefreshTokenRequest) -> Ref
 
 
 
-    except jwt.ExpiredSignatureError:
+    except jwt.ExpiredSignatureError:  # type: ignore
 
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Refresh token has expired")
 
-    except jwt.JWTError:
+    except jwt.JWTError:  # type: ignore
 
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid refresh token")
 
@@ -172,7 +172,7 @@ async def refresh_access_token(db: Session, request: RefreshTokenRequest) -> Ref
 
 async def create_user(db: Session, user: UserCreate):
 
-    db_user = UserRepository.get_user_by_email(db, user.email)
+    db_user = UserRepository.get_user_by_email(db, user.email)  # type: ignore
 
     if db_user:
 
