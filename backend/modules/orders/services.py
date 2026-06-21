@@ -1,17 +1,3 @@
-"""Business logic for the Orders module.
-
-
-
-Key design:
-
-- SELECT FOR UPDATE on ingredients to avoid overselling (ACID).
-
-- State machine: PENDING → PREPARING → READY → SERVED (per item).
-
-- After order created, push KDS event to the correct zone via ws_manager.
-
-"""
-
 from __future__ import annotations
 
 
@@ -242,14 +228,6 @@ def _check_and_lock_inventory(
 
 def _deduct_inventory_for_served_item(db: Session, order: Order, item: OrderItem) -> None:
 
-    """
-
-    Deduct inventory based on BOM when an order-item is marked as SERVED.
-
-    Uses row-level locks to avoid concurrent over-deduction.
-
-    """
-
     bom_rows = (
 
         db.query(BOMItem)
@@ -350,7 +328,7 @@ def _deduct_inventory_for_served_item(db: Session, order: Order, item: OrderItem
 
 async def create_order(db: Session, request: OrderCreate) -> Order:
 
-    """Create a new order with ACID inventory check."""
+
 
 
 
@@ -690,7 +668,7 @@ async def get_order_tracking(db: Session, order_id: uuid.UUID) -> dict:
 
 async def list_orders_by_table(db: Session, table_id: uuid.UUID) -> list[dict]:
 
-    """Trả về các đơn hàng đang hoạt động của bàn, kèm menu_item_name + variant_name."""
+
 
     from modules.menu.models import MenuItem, Variant
 
@@ -930,7 +908,7 @@ async def update_item_status(
 
 async def cancel_pending_items_for_order(db: Session, order: Order) -> None:
 
-    """Hủy tất cả món chưa xong khi checkout. Broadcast KDS để bếp tự dọn."""
+
 
     import asyncio
 
@@ -1078,7 +1056,7 @@ async def get_active_kds_items(db: Session, zone: str) -> list[dict]:
 
 async def get_ready_items(db: Session) -> list[dict]:
 
-    """Lấy tất cả order items đang READY để waiter load lúc khởi động."""
+
 
     from modules.tables.models import Table
 
