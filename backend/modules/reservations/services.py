@@ -256,11 +256,11 @@ async def checkin(db: Session, reservation_id: uuid.UUID) -> CheckinResponse:
 
     return CheckinResponse(
 
-        reservation_id=reservation.id, 
+        reservation_id=reservation.id,  # type: ignore
 
-        table_id=reservation.table_id, 
+        table_id=reservation.table_id,  # type: ignore
 
-        customer_name=reservation.customer_name, 
+        customer_name=reservation.customer_name,  # type: ignore
 
         message="Check-in thành công."
 
@@ -334,7 +334,7 @@ async def cancel_reservation(db: Session, reservation_id: uuid.UUID) -> Reservat
 
         if table and table.status == TableStatus.RESERVED:
 
-            table.status = TableStatus.EMPTY 
+            table.status = TableStatus.EMPTY  # type: ignore
 
 
 
@@ -378,7 +378,7 @@ async def verify_otp(db: Session, reservation_id: uuid.UUID, otp_code: str) -> R
 
 
 
-    reservation.status = ReservationStatus.CONFIRMED 
+    reservation.status = ReservationStatus.CONFIRMED  # type: ignore
 
     db.commit()
 
