@@ -1,0 +1,24 @@
+ID,Name,Outline Level,Duration,Predecessors,Resource Names
+1,Giai đoạn 1: Phân tích & Thiết kế hệ thống,1,6 days,,
+2,Khởi tạo dự án & Cấu trúc Monorepo,2,2 days,,TV1
+3,Thiết kế ERD & Mockup UI,2,4 days,2,"TV1; TV2; TV3; TV4"
+4,Giai đoạn 2: Phát triển Backend Core (TV1 & TV2),1,18 days,,
+5,Cấu hình Database & Auth (JWT/RBAC),2,4 days,3,"TV1; TV2"
+6,API Menu & Quản lý Kho (Inventory/BOM),2,5 days,5,TV2
+7,API Bàn & Đặt bàn trực tuyến (Reservation),2,5 days,6,TV2
+8,API Tạo Order (ACID) & Giao dịch,2,5 days,5,TV1
+9,Cấu hình KDS WebSockets & Batching,2,5 days,8,TV1
+10,API Billing & Tách bill (Split evenly),2,4 days,9,TV1
+11,Giai đoạn 3: Phát triển Customer Web (TV3),1,16 days,,
+12,Cấu trúc project & Trang chủ,2,4 days,3,TV3
+13,Giao diện danh sách Menu & Chi tiết món,2,5 days,12,TV3
+14,Luồng đặt bàn trực tuyến,2,7 days,13,TV3
+15,Giai đoạn 4: Phát triển Internal Web (TV4),1,18 days,,
+16,Giao diện Sơ đồ bàn & Gọi món hộ khách,2,5 days,3,TV4
+17,Màn hình KDS bếp (WebSockets realtime),2,5 days,16,TV4
+18,Màn hình POS (Thanh toán & Split bill),2,4 days,17,TV4
+19,Admin: Quản lý Menu & Kho hàng & Dashboard,2,4 days,18,TV4
+20,Giai đoạn 5: Tích hợp & Kiểm thử (Toàn đội),1,7 days,,
+21,Kiểm thử luồng ACID chống bán âm kho,2,2 days,"10,14,19",TV1
+22,Kiểm thử E2E (Đặt bàn -> KDS -> Thanh toán),2,3 days,21,"TV1; TV2; TV3; TV4"
+23,Deploy Docker & Hoàn thiện báo cáo,2,2 days,22,"TV1; TV2"

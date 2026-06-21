@@ -76,7 +76,20 @@ class _TableTabState extends ConsumerState<TableTab> {
             child: tableState.when(
               loading: () =>
                   const Center(child: CircularProgressIndicator()),
-              error: (e, _) => Center(child: Text('Lỗi: $e')),
+              error: (e, _) => Center(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text('Lỗi: $e', style: const TextStyle(color: Colors.red)),
+                    const SizedBox(height: 16),
+                    FilledButton.icon(
+                      icon: const Icon(Icons.refresh),
+                      label: const Text('Tải lại'),
+                      onPressed: () => ref.invalidate(tableProvider),
+                    ),
+                  ],
+                ),
+              ),
               data: (tables) {
                 final filtered = _selectedZone == 'Tất cả'
                     ? tables

@@ -48,8 +48,8 @@ class InventoryTab extends ConsumerWidget {
                          DataCell(Text(i.name)),
                          DataCell(Text(i.unit)),
                          DataCell(Text(i.costPerUnit.toStringAsFixed(0))),
-                         DataCell(Text('\${i.stockQty} \${i.unit}', style: TextStyle(fontWeight: FontWeight.bold, color: i.stockQty <= i.alertThreshold ? Colors.red : Colors.green))),
-                         DataCell(Text('\${i.alertThreshold} \${i.unit}')),
+                         DataCell(Text('${i.stockQty} ${i.unit}', style: TextStyle(fontWeight: FontWeight.bold, color: i.stockQty <= i.alertThreshold ? Colors.red : Colors.green))),
+                         DataCell(Text('${i.alertThreshold} ${i.unit}')),
                          DataCell(Row(
                            children: [
                              IconButton(icon: const Icon(Icons.edit, color: Colors.blue), onPressed: () => _showDialog(context, ref, ingredient: i)),
