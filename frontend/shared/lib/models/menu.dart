@@ -48,6 +48,7 @@ class MenuItem {
   final double basePrice;
   final String? imageUrl;
   final bool isAvailable;
+  final bool isFeatured;
   final String kdsZone;
   final List<Variant> variants;
   final List<Modifier> modifiers;
@@ -60,6 +61,7 @@ class MenuItem {
     required this.basePrice,
     this.imageUrl,
     this.isAvailable = true,
+    this.isFeatured = false,
     this.kdsZone = 'kitchen',
     this.variants = const [],
     this.modifiers = const [],
@@ -77,6 +79,7 @@ class MenuItem {
       basePrice: (json['base_price'] ?? json['price'] ?? 0.0).toDouble(),
       imageUrl: json['image_url'] as String?,
       isAvailable: json['is_available'] ?? true,
+      isFeatured: json['is_featured'] ?? false,
       kdsZone: json['kds_zone'] ?? 'kitchen',
       description: json['description'] as String? ?? '',
       variants: (json['variants'] as List<dynamic>?)

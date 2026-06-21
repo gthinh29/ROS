@@ -82,6 +82,16 @@ class TableNotifier extends Notifier<AsyncValue<List<TableModel>>> {
       return false;
     }
   }
+
+  Future<bool> updateTable(String id, Map<String, dynamic> payload) async {
+    try {
+      await apiClient.patch('/tables/$id', data: payload);
+      await _fetchTables();
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
 }
 
 final tableProvider = NotifierProvider<TableNotifier, AsyncValue<List<TableModel>>>(TableNotifier.new);

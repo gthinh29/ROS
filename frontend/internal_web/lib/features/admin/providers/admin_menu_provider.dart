@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared/models/menu.dart';
 import 'package:shared/core/api_client.dart';
 
+// ─── CategoryModel ────────────────────────────────────────────────────────────
 class CategoryModel {
   final String id;
   final String name;
@@ -11,12 +12,64 @@ class CategoryModel {
   }
 }
 
-final adminCategoryProvider = FutureProvider<List<CategoryModel>>((ref) async {
-  final res = await apiClient.get('/menu/categories');
-  final data = res.data['data'] ?? res.data;
-  return (data as List).map((e) => CategoryModel.fromJson(e)).toList();
-});
+// ─── Category Notifier (supports add/edit/delete) ─────────────────────────────
+class AdminCategoryNotifier
+    extends Notifier<AsyncValue<List<CategoryModel>>> {
+  @override
+  AsyncValue<List<CategoryModel>> build() {
+    _fetch();
+    return const AsyncValue.loading();
+  }
 
+  Future<void> _fetch() async {
+    try {
+      final res = await apiClient.get('/menu/categories');
+      final data = res.data['data'] ?? res.data;
+      final items =
+          (data as List).map((e) => CategoryModel.fromJson(e)).toList();
+      state = AsyncValue.data(items);
+    } catch (e, st) {
+      state = AsyncValue.error(e, st);
+    }
+  }
+
+  Future<bool> createCategory(Map<String, dynamic> payload) async {
+    try {
+      await apiClient.post('/menu/categories', data: payload);
+      await _fetch();
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  Future<bool> updateCategory(String id, Map<String, dynamic> payload) async {
+    try {
+      await apiClient.patch('/menu/categories/$id', data: payload);
+      await _fetch();
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  Future<bool> deleteCategory(String id) async {
+    try {
+      await apiClient.delete('/menu/categories/$id');
+      await _fetch();
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
+}
+
+final adminCategoryProvider =
+    NotifierProvider<AdminCategoryNotifier, AsyncValue<List<CategoryModel>>>(
+  AdminCategoryNotifier.new,
+);
+
+// ─── Menu Items Notifier ──────────────────────────────────────────────────────
 class AdminMenuNotifier extends Notifier<AsyncValue<List<MenuItem>>> {
   @override
   AsyncValue<List<MenuItem>> build() {
@@ -66,4 +119,7 @@ class AdminMenuNotifier extends Notifier<AsyncValue<List<MenuItem>>> {
   }
 }
 
-final adminMenuProvider = NotifierProvider<AdminMenuNotifier, AsyncValue<List<MenuItem>>>(AdminMenuNotifier.new);
+final adminMenuProvider =
+    NotifierProvider<AdminMenuNotifier, AsyncValue<List<MenuItem>>>(
+  AdminMenuNotifier.new,
+);
