@@ -59,7 +59,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     
     setState(() => _isSubmitting = true);
 
-    // Reserved at in ISO 8601
+    
     final dt = DateTime(
       _selectedDate.year, _selectedDate.month, _selectedDate.day,
       _selectedTime.hour, _selectedTime.minute
@@ -100,7 +100,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       body: SingleChildScrollView(
         child: Column(
           children: [
-            // Banner
+            
             Container(
               height: 300,
               width: double.infinity,
@@ -129,7 +129,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // Form 1: Search
+                      
                       Card(
                         child: Padding(
                           padding: const EdgeInsets.all(24.0),
@@ -178,7 +178,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       ),
                       const SizedBox(height: 24),
 
-                      // Form 2: Tables Result
+                      
                       if (_isSearching)
                         Card(
                           child: Padding(
@@ -234,7 +234,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                         ),
                       const SizedBox(height: 24),
 
-                      // Form 3: Customer Info
+                      
                       if (_selectedTable != null)
                         Card(
                           child: Padding(

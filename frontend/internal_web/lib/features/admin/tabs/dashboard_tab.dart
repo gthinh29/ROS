@@ -1,7 +1,7 @@
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 
-// ─── Mock Data ───────────────────────────────────────────────────────────────
+
 final List<Map<String, dynamic>> _mockTopItems = [
   {'rank': 1, 'name': 'Bò Lúc Lắc', 'qty': 42, 'revenue': 6_300_000},
   {'rank': 2, 'name': 'Cơm Chiên Dương Châu', 'qty': 38, 'revenue': 3_800_000},
@@ -10,11 +10,11 @@ final List<Map<String, dynamic>> _mockTopItems = [
   {'rank': 5, 'name': 'Chả Giò Hải Sản', 'qty': 22, 'revenue': 2_200_000},
 ];
 
-/// Revenue (triệu VNĐ) cho 7 ngày gần nhất – index 0 = 6 ngày trước
+
 final List<double> _mockRevenueChart = [8.2, 11.5, 9.8, 14.0, 12.3, 10.6, 15.0];
 final List<String> _mockDayLabels = ['T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN'];
 
-// ─── Widget ──────────────────────────────────────────────────────────────────
+
 class DashboardTab extends StatelessWidget {
   const DashboardTab({super.key});
 
@@ -25,11 +25,11 @@ class DashboardTab extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Section title
+          
           _sectionTitle('📊 Tổng Quan Hôm Nay'),
           const SizedBox(height: 16),
 
-          // ── Metric Cards ──────────────────────────────────────────────────
+          
           LayoutBuilder(
             builder: (_, constraints) {
               final cardWidth = (constraints.maxWidth - 48) / 4;
@@ -85,7 +85,7 @@ class DashboardTab extends StatelessWidget {
 
           const SizedBox(height: 32),
 
-          // ── Chart + Top Items row ─────────────────────────────────────────
+          
           LayoutBuilder(
             builder: (_, constraints) {
               final chartW = constraints.maxWidth * 0.62;
@@ -93,10 +93,10 @@ class DashboardTab extends StatelessWidget {
               return Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Line chart
+                  
                   _RevenueChart(width: chartW),
                   const SizedBox(width: 16),
-                  // Top items table
+                  
                   _TopItemsTable(width: tableW),
                 ],
               );
@@ -117,7 +117,7 @@ class DashboardTab extends StatelessWidget {
       );
 }
 
-// ─── Metric Card ─────────────────────────────────────────────────────────────
+
 class _MetricCard extends StatelessWidget {
   final double width;
   final IconData icon;
@@ -203,7 +203,7 @@ class _MetricCard extends StatelessWidget {
   }
 }
 
-// ─── Revenue Line Chart ───────────────────────────────────────────────────────
+
 class _RevenueChart extends StatelessWidget {
   final double width;
   const _RevenueChart({required this.width});
@@ -345,7 +345,7 @@ class _RevenueChart extends StatelessWidget {
   }
 }
 
-// ─── Top Items Table ──────────────────────────────────────────────────────────
+
 class _TopItemsTable extends StatelessWidget {
   final double width;
   const _TopItemsTable({required this.width});
@@ -384,7 +384,7 @@ class _TopItemsTable extends StatelessWidget {
             style: TextStyle(fontSize: 11, color: Color(0xFF94A3B8)),
           ),
           const SizedBox(height: 16),
-          // Header
+          
           const Padding(
             padding: EdgeInsets.symmetric(horizontal: 8),
             child: Row(
@@ -448,11 +448,11 @@ class _TopItemRow extends StatelessWidget {
   Color get _rankColor {
     switch (rank) {
       case 1:
-        return const Color(0xFFF59E0B); // Gold
+        return const Color(0xFFF59E0B); 
       case 2:
-        return const Color(0xFF94A3B8); // Silver
+        return const Color(0xFF94A3B8); 
       case 3:
-        return const Color(0xFFCD7C2F); // Bronze
+        return const Color(0xFFCD7C2F); 
       default:
         return const Color(0xFFCBD5E1);
     }

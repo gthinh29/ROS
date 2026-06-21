@@ -1,4 +1,4 @@
-// ignore_for_file: use_build_context_synchronously
+
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:shared/models/order.dart';
@@ -58,7 +58,7 @@ class _OrderCardState extends State<OrderCard> {
       case OrderItemStatus.ready:
         return Colors.greenAccent;
       default:
-        return Colors.grey.shade700; // Pending
+        return Colors.grey.shade700; 
     }
   }
 
@@ -96,7 +96,7 @@ class _OrderCardState extends State<OrderCard> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Header: Table + Time
+              
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -137,7 +137,7 @@ class _OrderCardState extends State<OrderCard> {
                 ],
               ),
               const SizedBox(height: 12),
-              // Item details
+              
               Row(
                 children: [
                   Expanded(
@@ -187,7 +187,7 @@ class _OrderCardState extends State<OrderCard> {
                   ),
                 ),
               const Spacer(),
-              // Action Buttons — ẩn nút khi đã bị hủy
+              
               if (!isCancelled) Row(
                 children: [
                   if (widget.item.status == OrderItemStatus.pending)

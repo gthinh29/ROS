@@ -19,7 +19,7 @@ class MyApp extends ConsumerWidget {
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(
-          seedColor: const Color(0xFFEF5350), // modern primary red
+          seedColor: const Color(0xFFEF5350), 
         ),
         textTheme: GoogleFonts.outfitTextTheme(Theme.of(context).textTheme),
         scaffoldBackgroundColor: Colors.grey.shade50,

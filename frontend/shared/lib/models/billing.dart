@@ -12,7 +12,7 @@ class BillModel {
   final double? paidAmount;
   final double? changeAmount;
   final BillStatus status;
-  // Thông tin khách + bàn (từ backend enriched response)
+  
   final String? customerName;
   final String? phone;
   final String? tableNumber;
@@ -57,7 +57,7 @@ class BillModel {
   }
 }
 
-/// Dữ liệu hiển thị phiếu thanh toán sau khi checkout thành công
+
 class CheckoutReceiptData {
   final String billId;
   final String? orderId;

@@ -18,7 +18,7 @@ class WaiterScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final readyItems = ref.watch(readyItemsProvider);
 
-    // Lắng nghe notification popup (flash snackbar)
+    
     ref.listen<WaiterNotification?>(waiterNotificationProvider, (prev, next) {
       if (next == null) return;
       ScaffoldMessenger.of(context).clearSnackBars();
@@ -107,13 +107,13 @@ class WaiterScreen extends ConsumerWidget {
       ),
       body: TabBarView(
         children: [
-          // Tab 1: Sơ đồ bàn (Giao diện cũ)
+          
           Row(
             children: [
-              // ── Left: Panel "Cần Bưng Ra" ─────────────────────────────────────
+              
               const ReadyItemsPanel(),
 
-              // ── Right: Sơ đồ bàn ──────────────────────────────────────────────
+              
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -161,7 +161,7 @@ class WaiterScreen extends ConsumerWidget {
             ],
           ),
 
-          // Tab 2: Danh sách đặt trước
+          
           const ReservationsTab(),
         ],
       ),

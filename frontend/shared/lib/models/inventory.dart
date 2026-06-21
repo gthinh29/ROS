@@ -1,4 +1,4 @@
-// models/inventory.dart
+
 class Ingredient {
   final String id;
   final String name;

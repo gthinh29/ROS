@@ -12,7 +12,7 @@ void main() {
       const ProviderScope(child: CustomerApp()),
     );
     await tester.pumpAndSettle();
-    // Should render the ErrorScreen (no tableId in test env)
+    
     expect(find.text('Không tìm thấy bàn'), findsOneWidget);
   });
 

@@ -26,7 +26,7 @@ class BillingNotifier extends Notifier<void> {
     ref.read(billingErrorProvider.notifier).setError(null);
     ref.read(currentBillProvider.notifier).setBill(null);
     try {
-      // 1. Lấy đơn hàng đang hoạt động của bàn này
+      
       final orderRes = await apiClient.get('/orders?table_id=$tableId');
       final List<dynamic> orders = orderRes.data['data'] ?? [];
 
@@ -37,7 +37,7 @@ class BillingNotifier extends Notifier<void> {
 
       final orderId = orders.first['id'];
 
-      // 2. Tạo hoặc lấy bill (backend tự động chỉ tính READY/SERVED)
+      
       final billRes = await apiClient.post('/billing/create', data: {
         'order_id': orderId
       });
@@ -63,7 +63,7 @@ class BillingNotifier extends Notifier<void> {
     }
   }
 
-  /// Thanh toán. Trả về [CheckoutReceiptData] nếu thành công, null nếu lỗi.
+  
   Future<CheckoutReceiptData?> checkout(String billId, String paymentMethod, {double? paidAmount, double? billTotal}) async {
     try {
       final Map<String, dynamic> payload = {
@@ -79,7 +79,7 @@ class BillingNotifier extends Notifier<void> {
       ref.read(billingErrorProvider.notifier).setError(null);
 
       final resData = res.data['data'] ?? res.data;
-      // Thêm total vào receipt data nếu backend không trả về (fallback từ bill)
+      
       if (resData['total'] == null && billTotal != null) {
         resData['total'] = billTotal;
       }

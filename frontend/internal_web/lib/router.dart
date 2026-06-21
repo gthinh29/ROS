@@ -20,13 +20,13 @@ final routerProvider = Provider<GoRouter>((ref) {
       final isIndex = state.uri.toString() == '/';
 
       if (!isLoggedIn) {
-        // Cho phép xem màn hình Index (/) và Login (/login)
+        
         if (isIndex || isLoggingIn) return null;
-        return '/'; // Fallback về Index
+        return '/'; 
       }
 
       if (isLoggingIn || state.uri.toString() == '/') {
-        // Automatically redirect based on role after login
+        
         switch (authState.user!.role) {
           case UserRole.admin:
             return '/admin';
@@ -53,7 +53,7 @@ final routerProvider = Provider<GoRouter>((ref) {
       ),
       GoRoute(
         path: '/pos',
-        builder: (context, state) => const PosScreen(), // Need to make this ConsumerWidget for logout to compile... Oh wait, I put ref.read there but PosScreen is StatelessWidget.
+        builder: (context, state) => const PosScreen(), 
       ),
       GoRoute(
         path: '/kds',

@@ -52,7 +52,7 @@ class ReservationsNotifier extends Notifier<ReservationsState> {
     try {
       final response = await apiClient.post('/reservations/$reservationId/checkin');
       if (response.statusCode == 200 || response.statusCode == 201) {
-        await fetchReservations(); // Refresh list after checkin
+        await fetchReservations(); 
         return true;
       }
       return false;

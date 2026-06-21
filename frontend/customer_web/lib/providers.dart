@@ -3,12 +3,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared/models/table.dart';
 
-// Đổi base URL nếu chạy trên môi trường khác. 
-// Nếu chạy Docker cục bộ trên Windows, proxy Nginx gọi vào /api.
-// Ở Customer Web, chúng ta gọi trực tiếp /api/...
+
+
+
 const String baseUrl = '/api';
 
-// --- State Class cho Available Tables ---
+
 class AvailableTablesState {
   final bool isLoading;
   final List<TableModel> tables;
@@ -41,7 +41,7 @@ final availableTablesProvider = StateNotifierProvider<AvailableTablesNotifier, A
   return AvailableTablesNotifier();
 });
 
-// --- Service tạo Đặt bàn ---
+
 final reservationServiceProvider = Provider((ref) => ReservationService());
 
 class ReservationService {
@@ -54,7 +54,7 @@ class ReservationService {
       );
       if (response.statusCode == 201) {
         final resData = jsonDecode(utf8.decode(response.bodyBytes))['data'];
-        return resData['id']; // Trả về reservation_id
+        return resData['id']; 
       }
       return null;
     } catch (e) {

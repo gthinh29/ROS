@@ -1,4 +1,4 @@
-// ignore_for_file: use_build_context_synchronously
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'billing_provider.dart';
@@ -39,7 +39,7 @@ class BillDetailPane extends ConsumerWidget {
               Expanded(
                 child: ListView(
                   children: [
-                    // Thông tin khách hàng (nếu có)
+                    
                     if (currentBill.tableNumber != null ||
                         currentBill.customerName != null) ...[
                       Container(
@@ -242,9 +242,9 @@ class BillDetailPane extends ConsumerWidget {
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// SplitBillDialog
-// ─────────────────────────────────────────────────────────────────────────────
+
+
+
 
 class SplitBillDialog extends ConsumerStatefulWidget {
   final BillModel bill;
@@ -407,9 +407,9 @@ class _SplitBillDialogState extends ConsumerState<SplitBillDialog> {
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// PaymentDialog
-// ─────────────────────────────────────────────────────────────────────────────
+
+
+
 
 class PaymentDialog extends ConsumerStatefulWidget {
   final String billId;
@@ -429,7 +429,7 @@ class _PaymentDialogState extends ConsumerState<PaymentDialog> {
     if (_method == 'CASH') {
       return _paidAmount != null && _paidAmount! >= widget.total;
     }
-    return true; // VIETQR / CARD không cần nhập tay
+    return true; 
   }
 
   @override
@@ -480,7 +480,7 @@ class _PaymentDialogState extends ConsumerState<PaymentDialog> {
                   setState(() => _paidAmount = double.tryParse(val)),
             ),
             const SizedBox(height: 8),
-            // Hiển thị tiền thừa hoặc cảnh báo thiếu
+            
             if (_paidAmount != null && _paidAmount! >= widget.total)
               Text(
                 'Tiền thừa: ${(_paidAmount! - widget.total).toStringAsFixed(0)} ₫',
@@ -515,7 +515,7 @@ class _PaymentDialogState extends ConsumerState<PaymentDialog> {
           child: const Text('Hủy'),
         ),
         ElevatedButton(
-          // Disable khi chưa đủ điều kiện
+          
           onPressed: _canConfirm
               ? () async {
                   final receipt = await ref
@@ -552,9 +552,9 @@ class _PaymentDialogState extends ConsumerState<PaymentDialog> {
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// PaymentReceiptDialog — Phiếu hóa đơn sau thanh toán
-// ─────────────────────────────────────────────────────────────────────────────
+
+
+
 
 class PaymentReceiptDialog extends StatelessWidget {
   final CheckoutReceiptData receipt;
@@ -616,7 +616,7 @@ class PaymentReceiptDialog extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            // Header
+            
             Row(
               children: [
                 const Icon(Icons.receipt_long, color: Colors.green, size: 28),
@@ -634,7 +634,7 @@ class PaymentReceiptDialog extends StatelessWidget {
             ),
             const Divider(thickness: 2),
 
-            // Thông tin bàn & khách
+            
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
@@ -654,7 +654,7 @@ class PaymentReceiptDialog extends StatelessWidget {
             ),
             const SizedBox(height: 12),
 
-            // Chi tiết tiền
+            
             if (subtotal != null)
               _receiptRow('Tạm tính:', '${subtotal!.toStringAsFixed(0)} ₫'),
             if (tax != null)
@@ -686,7 +686,7 @@ class PaymentReceiptDialog extends StatelessWidget {
 
             const SizedBox(height: 16),
 
-            // Footer
+            
             Container(
               padding: const EdgeInsets.all(10),
               decoration: BoxDecoration(
@@ -710,7 +710,7 @@ class PaymentReceiptDialog extends StatelessWidget {
             ),
             const SizedBox(height: 16),
 
-            // Buttons
+            
             Row(
               children: [
                 Expanded(
@@ -718,7 +718,7 @@ class PaymentReceiptDialog extends StatelessWidget {
                     icon: const Icon(Icons.print),
                     label: const Text('In hóa đơn'),
                     onPressed: () {
-                      // Tích hợp in hóa đơn
+                      
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(
                           content: Text(

@@ -1,4 +1,4 @@
-// ignore_for_file: use_build_context_synchronously
+
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -54,7 +54,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       body: Stack(
         fit: StackFit.expand,
         children: [
-          // Background Gradient base
+          
           Container(
             decoration: const BoxDecoration(
               gradient: RadialGradient(
@@ -68,7 +68,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               ),
             ),
           ),
-          // Glow / Highlight effect top right
+          
           Positioned(
             top: -150,
             right: -100,
@@ -86,7 +86,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               ),
             ),
           ),
-          // Glow / Highlight effect bottom left
+          
           Positioned(
             bottom: -200,
             left: -100,
@@ -104,7 +104,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               ),
             ),
           ),
-          // Login Form
+          
           Center(
             child: ClipRRect(
               borderRadius: BorderRadius.circular(24),
@@ -210,7 +210,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               ),
             ),
           ),
-          // Back Button
+          
           Positioned(
             top: 40,
             left: 40,

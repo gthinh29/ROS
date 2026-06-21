@@ -6,12 +6,12 @@ class OrderItemModel {
   final String id;
   final String orderId;
   final String menuItemId;
-  final String menuItemName; // Added for UI convenience
+  final String menuItemName; 
   final String? variantName;
   final int qty;
   final String? note;
   final OrderItemStatus status;
-  final String tableNumber; // Added for KDS context
+  final String tableNumber; 
   final DateTime createdAt;
 
   OrderItemModel({

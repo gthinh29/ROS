@@ -8,7 +8,7 @@ import 'tabs/table_tab.dart';
 import 'tabs/user_tab.dart';
 import 'tabs/inventory_tab.dart';
 
-// ─── Sidebar item descriptor ──────────────────────────────────────────────────
+
 class _NavItem {
   final IconData icon;
   final IconData iconFilled;
@@ -54,7 +54,7 @@ const _navItems = <_NavItem>[
   ),
 ];
 
-// ─── Tab titles ───────────────────────────────────────────────────────────────
+
 const _tabTitles = [
   'Tổng Quan',
   'Thực Đơn',
@@ -91,14 +91,14 @@ class _AdminScreenState extends ConsumerState<AdminScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF1F5F9), // Slate 50
+      backgroundColor: const Color(0xFFF1F5F9), 
       body: Row(
         children: [
-          // ── SIDEBAR ──────────────────────────────────────────────────────
+          
           Container(
             width: 260,
             decoration: const BoxDecoration(
-              color: Color(0xFF0F172A), // Slate 900
+              color: Color(0xFF0F172A), 
               boxShadow: [
                 BoxShadow(
                   color: Color(0x33000000),
@@ -112,7 +112,7 @@ class _AdminScreenState extends ConsumerState<AdminScreen>
               children: [
                 const SizedBox(height: 32),
 
-                // Brand logo row
+                
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 24.0),
                   child: Row(
@@ -161,7 +161,7 @@ class _AdminScreenState extends ConsumerState<AdminScreen>
 
                 const SizedBox(height: 36),
 
-                // Nav section label
+                
                 Padding(
                   padding: const EdgeInsets.only(left: 24, bottom: 8),
                   child: Text(
@@ -175,12 +175,12 @@ class _AdminScreenState extends ConsumerState<AdminScreen>
                   ),
                 ),
 
-                // Nav items (0-4 = main tabs)
+                
                 ...List.generate(5, (i) => _buildMenuItem(_navItems[i], i)),
 
                 const SizedBox(height: 24),
 
-                // Divider
+                
                 const Padding(
                   padding: EdgeInsets.symmetric(horizontal: 24),
                   child: Divider(
@@ -190,7 +190,7 @@ class _AdminScreenState extends ConsumerState<AdminScreen>
                 ),
                 const SizedBox(height: 16),
 
-                // Nav section label
+                
                 Padding(
                   padding: const EdgeInsets.only(left: 24, bottom: 8),
                   child: Text(
@@ -204,12 +204,12 @@ class _AdminScreenState extends ConsumerState<AdminScreen>
                   ),
                 ),
 
-                // Reports (index 5)
+                
                 _buildMenuItem(_navItems[5], 5),
 
                 const Spacer(),
 
-                // User Profile & Logout Box
+                
                 Container(
                   padding: const EdgeInsets.all(16),
                   margin: const EdgeInsets.all(12),
@@ -282,7 +282,7 @@ class _AdminScreenState extends ConsumerState<AdminScreen>
             ),
           ),
 
-          // ── MAIN CONTENT ──────────────────────────────────────────────────
+          
           Expanded(
             child: Column(
               children: [
@@ -359,7 +359,7 @@ class _AdminScreenState extends ConsumerState<AdminScreen>
             ],
           ),
           const Spacer(),
-          // Search box
+          
           Container(
             width: 280,
             height: 42,
@@ -383,7 +383,7 @@ class _AdminScreenState extends ConsumerState<AdminScreen>
             ),
           ),
           const SizedBox(width: 16),
-          // Notification bell
+          
           Stack(
             children: [
               Container(
@@ -435,7 +435,7 @@ class _AdminScreenState extends ConsumerState<AdminScreen>
   }
 }
 
-// ─── Sidebar Nav Item with smooth hover ──────────────────────────────────────
+
 class _SidebarNavItem extends StatefulWidget {
   final IconData icon;
   final IconData iconFilled;
@@ -513,7 +513,7 @@ class _SidebarNavItemState extends State<_SidebarNavItem>
               ),
               child: Row(
                 children: [
-                  // Icon with glow for selected
+                  
                   AnimatedSwitcher(
                     duration: const Duration(milliseconds: 200),
                     child: Icon(
@@ -544,7 +544,7 @@ class _SidebarNavItemState extends State<_SidebarNavItem>
                       ),
                     ),
                   ),
-                  // Active indicator dot
+                  
                   if (widget.isSelected)
                     Container(
                       width: 6,
@@ -564,7 +564,7 @@ class _SidebarNavItemState extends State<_SidebarNavItem>
   }
 }
 
-// ─── Reports Tab (placeholder UI) ────────────────────────────────────────────
+
 class _ReportsTab extends StatefulWidget {
   const _ReportsTab();
 
@@ -582,7 +582,7 @@ class _ReportsTabState extends State<_ReportsTab> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Header row
+          
           Row(
             children: [
               const Column(
@@ -604,7 +604,7 @@ class _ReportsTabState extends State<_ReportsTab> {
                 ],
               ),
               const Spacer(),
-              // Date range picker button
+              
               OutlinedButton.icon(
                 icon: const Icon(Icons.calendar_today_outlined, size: 16),
                 label: Text(
@@ -645,7 +645,7 @@ class _ReportsTabState extends State<_ReportsTab> {
           const Divider(color: Color(0xFFE2E8F0)),
           const SizedBox(height: 24),
 
-          // Placeholder table
+          
           Expanded(
             child: Center(
               child: Column(

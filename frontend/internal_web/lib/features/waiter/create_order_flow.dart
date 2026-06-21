@@ -1,4 +1,4 @@
-// ignore_for_file: use_build_context_synchronously
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared/models/menu.dart';
@@ -7,7 +7,7 @@ import 'package:shared/models/cart_item.dart';
 import 'menu_provider.dart';
 import 'cart_provider.dart';
 import 'order_progress_provider.dart';
-import 'waiter_notification_provider.dart'; // progressRefreshProvider
+import 'waiter_notification_provider.dart'; 
 
 
 class CreateOrderFlow extends ConsumerStatefulWidget {
@@ -83,7 +83,7 @@ class _CreateOrderFlowState extends ConsumerState<CreateOrderFlow>
                           )),
                       const Divider(),
                     ],
-                    // Số lượng
+                    
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
@@ -105,7 +105,7 @@ class _CreateOrderFlowState extends ConsumerState<CreateOrderFlow>
                         ),
                       ],
                     ),
-                    // Ghi chú
+                    
                     TextField(
                       controller: noteController,
                       decoration: const InputDecoration(
@@ -173,10 +173,10 @@ class _CreateOrderFlowState extends ConsumerState<CreateOrderFlow>
       body: TabBarView(
         controller: _tabController,
         children: [
-          // ── Tab 1: Gọi Món Mới ───────────────────────────────────────────
+          
           _OrderTab(onAddItem: _showAddToCartDialog),
 
-          // ── Tab 2: Tiến Trình Đơn ────────────────────────────────────────
+          
           tableId != null
               ? _ProgressTab(tableId: tableId, tableLabel: tableLabel)
               : const Center(child: Text('Chưa chọn bàn')),
@@ -186,9 +186,9 @@ class _CreateOrderFlowState extends ConsumerState<CreateOrderFlow>
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Tab 1: Gọi Món Mới (Menu + Giỏ hàng)
-// ─────────────────────────────────────────────────────────────────────────────
+
+
+
 
 class _OrderTab extends ConsumerWidget {
   final void Function(MenuItem) onAddItem;
@@ -201,7 +201,7 @@ class _OrderTab extends ConsumerWidget {
 
     return Row(
       children: [
-        // Menu Grid
+        
         Expanded(
           flex: 2,
           child: menuAsync.when(
@@ -269,7 +269,7 @@ class _OrderTab extends ConsumerWidget {
           ),
         ),
 
-        // Giỏ hàng
+        
         Container(
           width: 320,
           decoration: BoxDecoration(
@@ -395,9 +395,9 @@ class _OrderTab extends ConsumerWidget {
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Tab 2: Tiến Trình Đơn — Realtime với WS + polling fallback
-// ─────────────────────────────────────────────────────────────────────────────
+
+
+
 
 class _ProgressTab extends ConsumerStatefulWidget {
   final String tableId;
@@ -414,7 +414,7 @@ class _ProgressTabState extends ConsumerState<_ProgressTab> {
   @override
   void initState() {
     super.initState();
-    // Polling fallback: 20s refresh nếu WS không hoạt động
+    
     Future.delayed(Duration.zero, _startPolling);
   }
 
@@ -424,7 +424,7 @@ class _ProgressTabState extends ConsumerState<_ProgressTab> {
       if (!mounted) return;
       ref.invalidate(orderProgressProvider(widget.tableId));
       setState(() => _lastUpdated = DateTime.now());
-      _startPolling(); // lặp lại
+      _startPolling(); 
     });
   }
 
@@ -435,7 +435,7 @@ class _ProgressTabState extends ConsumerState<_ProgressTab> {
 
   @override
   Widget build(BuildContext context) {
-    // Lắng nghe WS refresh trigger → invalidate ngay khi có event
+    
     ref.listen<int>(progressRefreshProvider, (prev, next) {
       ref.invalidate(orderProgressProvider(widget.tableId));
       if (mounted) setState(() => _lastUpdated = DateTime.now());
@@ -445,7 +445,7 @@ class _ProgressTabState extends ConsumerState<_ProgressTab> {
 
     return Column(
       children: [
-        // ── Status bar ─────────────────────────────────────────
+        
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           color: Colors.indigo.shade50,
@@ -468,14 +468,14 @@ class _ProgressTabState extends ConsumerState<_ProgressTab> {
           ),
         ),
 
-        // ── Content ────────────────────────────────────────────
+        
         Expanded(
           child: RefreshIndicator(
             onRefresh: () async => _refresh(),
             child: progressAsync.when(
               data: (items) {
                 if (items.isEmpty) {
-                  return ListView( // wrap in ListView để RefreshIndicator hoạt động
+                  return ListView( 
                     children: [
                       SizedBox(height: MediaQuery.of(context).size.height * 0.25),
                       const Center(
@@ -501,7 +501,7 @@ class _ProgressTabState extends ConsumerState<_ProgressTab> {
                   );
                 }
 
-                // Nhóm theo trạng thái để dễ nhìn
+                
                 final active = items.where((i) =>
                     i.status == OrderItemStatus.pending ||
                     i.status == OrderItemStatus.preparing).toList();
@@ -588,7 +588,7 @@ class _ProgressItemTile extends StatelessWidget {
       padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
       child: Row(
         children: [
-          // Status icon
+          
           Container(
             width: 40,
             height: 40,
@@ -600,7 +600,7 @@ class _ProgressItemTile extends StatelessWidget {
           ),
           const SizedBox(width: 12),
 
-          // Tên món + tùy chọn
+          
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -638,7 +638,7 @@ class _ProgressItemTile extends StatelessWidget {
             ),
           ),
 
-          // Badge trạng thái
+          
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
             decoration: BoxDecoration(

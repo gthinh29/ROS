@@ -1,4 +1,4 @@
-// ignore_for_file: use_null_aware_elements
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared/models/cart_item.dart';
@@ -48,7 +48,7 @@ class CartNotifier extends Notifier<List<CartItem>> {
     final tableId = ref.read(selectedTableIdProvider);
     if (state.isEmpty) return false;
 
-    // Build the request matching OrderCreate schema
+    
     final type = tableId != null ? 'DINE_IN' : 'TAKEAWAY';
     
     final itemsPayload = state.map((item) {

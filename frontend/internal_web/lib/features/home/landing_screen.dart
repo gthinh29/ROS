@@ -10,14 +10,14 @@ class LandingScreen extends StatelessWidget {
       body: Stack(
         fit: StackFit.expand,
         children: [
-          // Background Image
+          
           Image.network(
             'bg_index.jpg',
             fit: BoxFit.cover,
             color: Colors.black.withValues(alpha: 0.5),
             colorBlendMode: BlendMode.darken,
           ),
-          // Content
+          
           Center(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,

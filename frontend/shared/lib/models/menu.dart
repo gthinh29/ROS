@@ -68,7 +68,7 @@ class MenuItem {
     this.description = '',
   });
 
-  /// Convenience alias – customer_web dùng `price` thay vì `basePrice`
+  
   double get price => basePrice;
 
   factory MenuItem.fromJson(Map<String, dynamic> json) {

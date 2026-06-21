@@ -46,7 +46,7 @@ class CustomerApp extends StatelessWidget {
       routerConfig: router,
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(
-          seedColor: const Color(0xFFE53935), // ROS Red
+          seedColor: const Color(0xFFE53935), 
           brightness: Brightness.light,
         ),
         textTheme: GoogleFonts.beVietnamProTextTheme(),

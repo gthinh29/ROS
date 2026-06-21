@@ -1,4 +1,4 @@
-// ignore_for_file: use_build_context_synchronously
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'providers/admin_bom_provider.dart';
@@ -47,7 +47,7 @@ class _BomManagerState extends ConsumerState<BomManager> {
   }
 
   void _save() async {
-    // Validate
+    
     if (bomItems.any((e) => e['ingredient_id'] == '' || e['qty_required'] <= 0)) {
        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Vui lòng chọn đầy đủ nguyên liệu và số lượng > 0')));
        return;

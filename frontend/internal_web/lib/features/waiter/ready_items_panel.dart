@@ -1,4 +1,4 @@
-// ignore_for_file: use_build_context_synchronously
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'waiter_notification_provider.dart';
@@ -40,7 +40,7 @@ class ReadyItemsPanel extends ConsumerWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          // Header
+          
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
             decoration: BoxDecoration(
@@ -61,7 +61,7 @@ class ReadyItemsPanel extends ConsumerWidget {
                     ),
                   ),
                 ),
-                // Badge số lượng
+                
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                   decoration: BoxDecoration(
@@ -81,7 +81,7 @@ class ReadyItemsPanel extends ConsumerWidget {
             ),
           ),
 
-          // Danh sách món cần bưng
+          
           Expanded(
             child: ListView.separated(
               padding: const EdgeInsets.all(0),
@@ -112,7 +112,7 @@ class _ReadyItemCard extends ConsumerWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Table badge
+          
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
             decoration: BoxDecoration(
@@ -137,7 +137,7 @@ class _ReadyItemCard extends ConsumerWidget {
           ),
           const SizedBox(height: 6),
 
-          // Tên món
+          
           Text(
             item.menuItemName,
             style: const TextStyle(
@@ -147,7 +147,7 @@ class _ReadyItemCard extends ConsumerWidget {
           ),
           const SizedBox(height: 10),
 
-          // Nút Đã Bưng
+          
           SizedBox(
             width: double.infinity,
             child: ElevatedButton.icon(

@@ -7,11 +7,11 @@ class KdsAudioNotifier extends Notifier<bool> {
 
   @override
   bool build() {
-    return false; // isMuted = false
+    return false; 
   }
 
   Future<void> playNewOrderSound() async {
-    if (state) return; // Nếu đang Mute thì bỏ qua
+    if (state) return; 
     try {
       await _player.play(UrlSource('https://actions.google.com/sounds/v1/alarms/beep_short.ogg'), volume: 1.0);
     } catch (e) {

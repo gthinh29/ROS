@@ -15,7 +15,7 @@ class KdsScreen extends ConsumerWidget {
     final List<Map<String, dynamic>> result = [];
 
     for (var item in items) {
-      // Cancelled items hiển thị riêng lẻ, không gộp nhóm
+      
       if (item.status == OrderItemStatus.cancelled) {
         result.add({'item': item, 'batchedQty': 1});
         continue;
@@ -32,7 +32,7 @@ class KdsScreen extends ConsumerWidget {
     }
 
     pendingGroups.forEach((key, list) {
-      // Gộp nhóm PENDING, dùng item cũ nhất làm đại diện
+      
       list.sort((a, b) => a.createdAt.compareTo(b.createdAt));
       result.add({'item': list.first, 'batchedQty': list.length, 'group': list});
     });
@@ -45,7 +45,7 @@ class KdsScreen extends ConsumerWidget {
     final kdsAsync = ref.watch(kdsProvider);
     final isMuted = ref.watch(kdsAudioProvider);
 
-    // Kiểm tra có món HỦY không để hiện nút Dọn dẹp
+    
     final hasCancelled = kdsAsync.value?.any((e) => e.status == OrderItemStatus.cancelled) ?? false;
 
     return Scaffold(

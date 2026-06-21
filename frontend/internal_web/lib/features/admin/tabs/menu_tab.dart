@@ -1,4 +1,4 @@
-// ignore_for_file: use_build_context_synchronously
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/admin_menu_provider.dart';
@@ -13,7 +13,7 @@ class MenuTab extends ConsumerStatefulWidget {
 }
 
 class _MenuTabState extends ConsumerState<MenuTab> {
-  String? _selectedCategoryId; // null = show all
+  String? _selectedCategoryId; 
 
   @override
   Widget build(BuildContext context) {
@@ -24,7 +24,7 @@ class _MenuTabState extends ConsumerState<MenuTab> {
 
     return Row(
       children: [
-        // ── Left: Category sidebar ──────────────────────────────────────────
+        
         Container(
           width: 200,
           decoration: const BoxDecoration(
@@ -36,7 +36,7 @@ class _MenuTabState extends ConsumerState<MenuTab> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Header
+              
               Container(
                 padding: const EdgeInsets.symmetric(
                   horizontal: 16,
@@ -76,14 +76,14 @@ class _MenuTabState extends ConsumerState<MenuTab> {
                   ],
                 ),
               ),
-              // All items chip
+              
               _CategoryItem(
                 label: 'Tất cả',
                 selected: _selectedCategoryId == null,
                 onTap: () => setState(() => _selectedCategoryId = null),
                 onDelete: null,
               ),
-              // Category list
+              
               Expanded(
                 child: categoryState.when(
                   loading: () => const Center(
@@ -118,7 +118,7 @@ class _MenuTabState extends ConsumerState<MenuTab> {
           ),
         ),
 
-        // ── Right: Menu items grid ──────────────────────────────────────────
+        
         Expanded(
           child: Scaffold(
             floatingActionButton: FloatingActionButton.extended(
@@ -135,7 +135,7 @@ class _MenuTabState extends ConsumerState<MenuTab> {
                   const Center(child: CircularProgressIndicator()),
               error: (e, _) => Center(child: Text('Lỗi: $e')),
               data: (items) {
-                // Filter by category
+                
                 final filtered = _selectedCategoryId == null
                     ? items
                     : items
@@ -200,7 +200,7 @@ class _MenuTabState extends ConsumerState<MenuTab> {
                               );
                               return DataRow(
                                 cells: [
-                                  // Image
+                                  
                                   DataCell(
                                     _MenuImageAvatar(
                                       imageUrl: item.imageUrl,
@@ -357,7 +357,7 @@ class _MenuTabState extends ConsumerState<MenuTab> {
   }
 }
 
-// ─── Category sidebar item ────────────────────────────────────────────────────
+
 class _CategoryItem extends StatefulWidget {
   final String label;
   final bool selected;
@@ -456,7 +456,7 @@ class _CategoryItemState extends State<_CategoryItem> {
   }
 }
 
-// ─── Menu image avatar ────────────────────────────────────────────────────────
+
 class _MenuImageAvatar extends StatelessWidget {
   final String? imageUrl;
   final String name;
@@ -498,7 +498,7 @@ class _MenuImageAvatar extends StatelessWidget {
       );
 }
 
-// ─── KDS Zone Chip ────────────────────────────────────────────────────────────
+
 class _KdsChip extends StatelessWidget {
   final String zone;
   const _KdsChip({required this.zone});
@@ -532,7 +532,7 @@ class _KdsChip extends StatelessWidget {
   }
 }
 
-// ─── Availability Chip ────────────────────────────────────────────────────────
+
 class _AvailabilityChip extends StatelessWidget {
   final bool isAvailable;
   const _AvailabilityChip({required this.isAvailable});
@@ -580,7 +580,7 @@ class _AvailabilityChip extends StatelessWidget {
   }
 }
 
-// ─── Category Form Dialog ─────────────────────────────────────────────────────
+
 class CategoryFormDialog extends ConsumerStatefulWidget {
   final CategoryModel? category;
   const CategoryFormDialog({super.key, this.category});
@@ -653,7 +653,7 @@ class _CategoryFormDialogState extends ConsumerState<CategoryFormDialog> {
   }
 }
 
-// ─── Menu Form Dialog ─────────────────────────────────────────────────────────
+
 class MenuFormDialog extends ConsumerStatefulWidget {
   final MenuItem? item;
   final List<CategoryModel> categories;

@@ -1,9 +1,9 @@
-// ignore_for_file: use_build_context_synchronously
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../pos/table_provider.dart';
 
-// ─── Mock Zones ───────────────────────────────────────────────────────────────
+
 const _kZones = ['Tất cả', 'Tầng 1', 'Sân vườn', 'Phòng VIP'];
 
 class TableTab extends ConsumerStatefulWidget {
@@ -35,7 +35,7 @@ class _TableTabState extends ConsumerState<TableTab> {
       backgroundColor: const Color(0xFFF8FAFC),
       body: Column(
         children: [
-          // ── Zone filter bar ──────────────────────────────────────────────
+          
           Container(
             color: Colors.white,
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
@@ -71,7 +71,7 @@ class _TableTabState extends ConsumerState<TableTab> {
           ),
           const Divider(height: 1),
 
-          // ── Table grid ───────────────────────────────────────────────────
+          
           Expanded(
             child: tableState.when(
               loading: () =>
@@ -149,7 +149,7 @@ class _TableTabState extends ConsumerState<TableTab> {
   }
 }
 
-// ─── Zone Chip ────────────────────────────────────────────────────────────────
+
 class _ZoneChip extends StatelessWidget {
   final String label;
   final bool selected;
@@ -191,7 +191,7 @@ class _ZoneChip extends StatelessWidget {
   }
 }
 
-// ─── Table Card ───────────────────────────────────────────────────────────────
+
 class _TableCard extends StatefulWidget {
   final int tableNumber;
   final String zone;
@@ -221,7 +221,7 @@ class _TableCardState extends State<_TableCard> {
       case 'reserved':
         return const Color(0xFFF59E0B);
       default:
-        return const Color(0xFF10B981); // available
+        return const Color(0xFF10B981); 
     }
   }
 
@@ -272,7 +272,7 @@ class _TableCardState extends State<_TableCard> {
         ),
         child: Stack(
           children: [
-            // Status indicator top bar
+            
             Positioned(
               top: 0,
               left: 0,
@@ -293,7 +293,7 @@ class _TableCardState extends State<_TableCard> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Table icon + number
+                  
                   Row(
                     children: [
                       Icon(
@@ -314,7 +314,7 @@ class _TableCardState extends State<_TableCard> {
                   ),
                   const SizedBox(height: 6),
 
-                  // Zone
+                  
                   Text(
                     widget.zone,
                     style: const TextStyle(
@@ -323,7 +323,7 @@ class _TableCardState extends State<_TableCard> {
                     ),
                   ),
 
-                  // Capacity
+                  
                   if (widget.capacity != null) ...[
                     const SizedBox(height: 4),
                     Row(
@@ -347,7 +347,7 @@ class _TableCardState extends State<_TableCard> {
 
                   const Spacer(),
 
-                  // Status chip
+                  
                   Container(
                     padding: const EdgeInsets.symmetric(
                       horizontal: 8,
@@ -370,7 +370,7 @@ class _TableCardState extends State<_TableCard> {
               ),
             ),
 
-            // Hover action button
+            
             if (_hovered)
               Positioned(
                 right: 8,
@@ -419,7 +419,7 @@ class _SmallIconBtn extends StatelessWidget {
   }
 }
 
-// ─── Add Table Dialog ─────────────────────────────────────────────────────────
+
 class AddTableDialog extends ConsumerStatefulWidget {
   const AddTableDialog({super.key});
 
@@ -520,9 +520,9 @@ class _AddTableDialogState extends ConsumerState<AddTableDialog> {
       );
 }
 
-// ─── Edit Table Dialog ────────────────────────────────────────────────────────
+
 class EditTableDialog extends ConsumerStatefulWidget {
-  final dynamic table; // RestaurantTable or dynamic from provider
+  final dynamic table; 
   const EditTableDialog({super.key, required this.table});
 
   @override

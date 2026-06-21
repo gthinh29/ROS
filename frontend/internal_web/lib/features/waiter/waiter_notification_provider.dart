@@ -6,7 +6,7 @@ import 'package:shared/core/constants.dart';
 import 'package:shared/core/api_client.dart';
 import '../auth/auth_notifier.dart';
 
-// ─── Notification (Popup) ───────────────────────────────────────────────────
+
 
 class WaiterNotification {
   final String event;
@@ -28,14 +28,14 @@ class WaiterNotification {
   });
 }
 
-// ─── Ready Item Model (bưng ra) ─────────────────────────────────────────────
+
 
 class ReadyItem {
   final String itemId;
   final String orderId;
   final String tableNumber;
   final String menuItemName;
-  bool isServing; // đang xử lý (loading)
+  bool isServing; 
 
   ReadyItem({
     required this.itemId,
@@ -46,14 +46,14 @@ class ReadyItem {
   });
 }
 
-// ─── Ready Items List Provider ───────────────────────────────────────────────
+
 
 class ReadyItemsNotifier extends Notifier<List<ReadyItem>> {
   @override
   List<ReadyItem> build() => [];
 
   void addItem(ReadyItem item) {
-    // Tránh thêm duplicate
+    
     final exists = state.any((e) => e.itemId == item.itemId);
     if (!exists) state = [...state, item];
   }
@@ -62,13 +62,13 @@ class ReadyItemsNotifier extends Notifier<List<ReadyItem>> {
     state = state.where((e) => e.itemId != itemId).toList();
   }
 
-  /// Xóa tất cả items của một bàn (khi dọn bàn / checkout)
+  
   void clearTable(String tableNumber) {
     state = state.where((e) => e.tableNumber != tableNumber).toList();
   }
 
   Future<bool> markServed(String orderId, String itemId) async {
-    // Đánh dấu loading
+    
     state = state
         .map((e) => e.itemId == itemId
             ? ReadyItem(
@@ -90,7 +90,7 @@ class ReadyItemsNotifier extends Notifier<List<ReadyItem>> {
       return true;
     } catch (e) {
       debugPrint('SERVED ERROR: $e');
-      // Reset loading
+      
       state = state
           .map((item) => item.itemId == itemId
               ? ReadyItem(
@@ -110,10 +110,10 @@ class ReadyItemsNotifier extends Notifier<List<ReadyItem>> {
 final readyItemsProvider =
     NotifierProvider<ReadyItemsNotifier, List<ReadyItem>>(ReadyItemsNotifier.new);
 
-// ─── Progress Refresh Trigger (realtime for progress tab) ───────────────────
 
-/// Tăng counter mỗi khi có item_status_updated / TABLE_CLEARED
-/// để _ProgressTab tự invalidate orderProgressProvider
+
+
+
 class ProgressRefreshNotifier extends Notifier<int> {
   @override
   int build() => 0;
@@ -123,7 +123,7 @@ class ProgressRefreshNotifier extends Notifier<int> {
 final progressRefreshProvider =
     NotifierProvider<ProgressRefreshNotifier, int>(ProgressRefreshNotifier.new);
 
-// ─── Notification Provider (WS Listener) ────────────────────────────────────
+
 
 class WaiterNotificationNotifier extends Notifier<WaiterNotification?> {
   WebSocketChannel? _channel;
@@ -133,7 +133,7 @@ class WaiterNotificationNotifier extends Notifier<WaiterNotification?> {
     final user = ref.watch(authProvider).user;
     if (user != null && user.role.name.toUpperCase() == 'WAITER') {
       _connectWebSocket(user.id);
-      // Load các món READY hiện có trong DB (trường hợp đăng nhập lại / refresh)
+      
       Future.microtask(() => _loadReadyItems());
     }
     ref.onDispose(() => _channel?.sink.close());
@@ -177,7 +177,7 @@ class WaiterNotificationNotifier extends Notifier<WaiterNotification?> {
               final itemId = data['item_id']?.toString();
               final orderId = data['order_id']?.toString();
 
-              // 1. Trigger popup notification
+              
               state = WaiterNotification(
                 event: event!,
                 title: '🍽️ Món Đã Xong!',
@@ -188,7 +188,7 @@ class WaiterNotificationNotifier extends Notifier<WaiterNotification?> {
                 menuItemName: itemName,
               );
 
-              // 2. Thêm vào danh sách "Cần Bưng Ra"
+              
               if (itemId != null && orderId != null) {
                 ref.read(readyItemsProvider.notifier).addItem(ReadyItem(
                   itemId: itemId,
@@ -198,11 +198,11 @@ class WaiterNotificationNotifier extends Notifier<WaiterNotification?> {
                 ));
               }
 
-              // 3. Trigger progress tab refresh
+              
               ref.read(progressRefreshProvider.notifier).trigger();
 
             } else if (event == 'item_status_updated') {
-              // KDS cập nhật trạng thái → refresh progress tab
+              
               ref.read(progressRefreshProvider.notifier).trigger();
 
             } else if (event == 'CALL_WAITER') {
@@ -214,7 +214,7 @@ class WaiterNotificationNotifier extends Notifier<WaiterNotification?> {
               );
 
             } else if (event == 'CANCELLED') {
-              // Xóa khỏi danh sách nếu món bị hủy lẻ
+              
               final itemId = data['item_id']?.toString();
               if (itemId != null) {
                 ref.read(readyItemsProvider.notifier).removeItem(itemId);
@@ -222,7 +222,7 @@ class WaiterNotificationNotifier extends Notifier<WaiterNotification?> {
               ref.read(progressRefreshProvider.notifier).trigger();
 
             } else if (event == 'TABLE_CLEARED') {
-              // Dọn bàn → xóa tất cả ready items của bàn đó
+              
               final tableNum = data['table_number']?.toString();
               if (tableNum != null) {
                 ref.read(readyItemsProvider.notifier).clearTable(tableNum);

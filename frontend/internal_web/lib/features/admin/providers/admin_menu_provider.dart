@@ -2,7 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared/models/menu.dart';
 import 'package:shared/core/api_client.dart';
 
-// ─── CategoryModel ────────────────────────────────────────────────────────────
+
 class CategoryModel {
   final String id;
   final String name;
@@ -12,7 +12,7 @@ class CategoryModel {
   }
 }
 
-// ─── Category Notifier (supports add/edit/delete) ─────────────────────────────
+
 class AdminCategoryNotifier
     extends Notifier<AsyncValue<List<CategoryModel>>> {
   @override
@@ -69,7 +69,7 @@ final adminCategoryProvider =
   AdminCategoryNotifier.new,
 );
 
-// ─── Menu Items Notifier ──────────────────────────────────────────────────────
+
 class AdminMenuNotifier extends Notifier<AsyncValue<List<MenuItem>>> {
   @override
   AsyncValue<List<MenuItem>> build() {

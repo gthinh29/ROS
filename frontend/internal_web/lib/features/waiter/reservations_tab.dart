@@ -44,13 +44,13 @@ class _ReservationsTabState extends ConsumerState<ReservationsTab> {
       );
     }
 
-    // Lọc ra các đặt bàn chưa check-in hoặc chưa huỷ
+    
     final activeReservations = state.reservations.where((r) => 
       r.status == ReservationStatus.pending || 
       r.status == ReservationStatus.confirmed
     ).toList();
 
-    // Sắp xếp theo giờ đặt tăng dần
+    
     activeReservations.sort((a, b) => a.reservedAt.compareTo(b.reservedAt));
 
     if (activeReservations.isEmpty) {
