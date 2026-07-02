@@ -10,7 +10,7 @@ from typing import List
 
 
 
-from .repository import BOMRepository, IngredientRepository
+from .repository import BOMRepository, IngredientRepository, InventoryLogRepository
 
 from .models import BOMItem, Ingredient, InventoryLog
 
@@ -83,20 +83,12 @@ def update_ingredient(db: Session, ingredient_id: UUID, data: IngredientUpdate) 
         delta = new_stock_qty - old_stock_qty
 
         if delta != 0:
-
-            log = InventoryLog(
-
-                ingredient_id=updated.id,
-
-                delta=delta,
-
-                reason="Manual stock adjustment via ingredient update",
-
-            )
-
-            db.add(log)
-
-            db.commit()
+            log_data = {
+                "ingredient_id": updated.id,
+                "delta": delta,
+                "reason": "Manual stock adjustment via ingredient update",
+            }
+            InventoryLogRepository.create(db, log_data)
 
     return updated
 
@@ -115,18 +107,7 @@ def delete_ingredient(db: Session, ingredient_id: UUID) -> None:
 
 
     try:
-
-        
-
-        db.query(BOMItem).filter(BOMItem.ingredient_id == ingredient_id).delete(synchronize_session=False)
-
-        db.query(InventoryLog).filter(InventoryLog.ingredient_id == ingredient_id).delete(synchronize_session=False)
-
-
-
-        db.delete(ingredient)
-
-        db.commit()
+        IngredientRepository.delete_with_relations(db, ingredient)
 
     except IntegrityError:
 
@@ -187,10 +168,7 @@ def set_bom(db: Session, menu_item_id: UUID, data: MenuBOMUpdate) -> List[BOMIte
     ingredient_ids = [item.ingredient_id for item in data.bom_items]
 
     if ingredient_ids:
-
-        found_ingredients = db.query(Ingredient.id).filter(Ingredient.id.in_(ingredient_ids)).all()
-
-        found_ingredient_ids = {row[0] for row in found_ingredients}
+        found_ingredient_ids = IngredientRepository.get_existing_ids(db, ingredient_ids)
 
     else:
 
