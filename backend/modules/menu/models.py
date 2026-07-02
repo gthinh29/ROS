@@ -2,6 +2,7 @@
 
 
 
+from datetime import datetime
 import uuid
 
 
@@ -104,7 +105,7 @@ class MenuItem(Base):
 
     )
 
-    created_at: Mapped[str] = mapped_column(
+    created_at: Mapped[datetime] = mapped_column(
 
         DateTime(timezone=True), server_default=func.now()
 

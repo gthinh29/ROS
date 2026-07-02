@@ -2,6 +2,7 @@
 
 
 
+from datetime import datetime
 import uuid
 
 
@@ -70,13 +71,13 @@ class Bill(Base):
 
     )
 
-    created_at: Mapped[str] = mapped_column(
+    created_at: Mapped[datetime] = mapped_column(
 
         DateTime(timezone=True), server_default=func.now()
 
     )
 
-    paid_at: Mapped[str | None] = mapped_column(
+    paid_at: Mapped[datetime | None] = mapped_column(
 
         DateTime(timezone=True), nullable=True
 

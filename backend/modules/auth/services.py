@@ -12,7 +12,6 @@ from .schemas import (
 
 )
 
-from .models import User
 
 from .repository import UserRepository
 
@@ -74,7 +73,7 @@ async def create_refresh_token(data: dict):
 
 async def login_user(db: Session, request: LoginRequest) -> LoginResponse:
 
-    user = db.query(User).filter(User.email == request.email).first()
+    user = UserRepository.get_user_by_email(db, request.email)
 
     if not user:
 
@@ -136,7 +135,7 @@ async def refresh_access_token(db: Session, request: RefreshTokenRequest) -> Ref
 
 
 
-        user = db.query(User).filter(User.id == user_id).first()
+        user = UserRepository.get_user_by_id(db, user_id)
 
         if not user:
 
